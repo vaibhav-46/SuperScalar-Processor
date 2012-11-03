@@ -47,3 +47,5 @@ class RegisterFile
 
         void printContents();
 };
+
+#endif
