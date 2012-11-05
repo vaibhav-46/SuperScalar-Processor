@@ -20,14 +20,19 @@
 
 RegisterFile RegisterFile()
 {
-    for ( int i = 0,j=0; i < NoOfRegisters ; i++ )
+    int i = 0;
+    for ( i = 0; i < NoOfRegisters ; i++ )
     {
-        registers[i] = 0;
+        registers[i] = 0;        
+        busy[i] = 0;
         tag[i] = -1;
-        busy[j] = busy[j+1] = busy[j+2] = 0;
-        j = j+3;
     }
-    notBusyIndex = 0;
+    for ( i = 0; i < NoOfRenameRegisters ; i++ )
+    {
+        registers[ NoOfRegisters + i ] = 0;
+        valid[i] = 0;
+        RRFbusy[i] = 0;
+    }
 }
 
 int RegisterFile::noPortsWritable ()
@@ -115,12 +120,19 @@ void RegisterFile::printContents()
 
 int renameVariable ( int index )
 {
-    for ( int i = 0 ; i < NoOfRenameRegisters ; i++ )
+    assert( i < 32 )
     {
-        if ( busy[i] )
+        cout << "Renaming a renamed variable !! " << endl;
+        exit(-1);
+    }
+    for ( int i = NoOfRegisters ; i < NoOfRegisters+NoOfRenameRegisters ; i++ )
+    {
+        if ( RRFbusy[i-NoOfRegisters]  )
             continue;
-        busy[i] = 1;
+        RRFbusy[i-NoOfRegisters] = 1;
+        busy[index] = 1;
         tag[index] = i;
+        valid[i-NoOfRegisters] = 0;
         return i;
     }
     cout << "ERROR : All the renameRegisters are taken !! " << endl;
@@ -129,14 +141,108 @@ int renameVariable ( int index )
 
 void updateRegisters ( int index , T value )
 {
+    assert ( index < 32 )
+    {
+        cout << "Writing to a non-renamed variable !! " << endl;
+        exit(-1);
+    }
+    registers[index] = value;
+    valid[index-NoOfRegisters] = 1;
+}
+
+void finishExecutionRegister ( int index )
+{
     for ( int i = 0; i < NoOfRegisters ; i++ )
     {
         if ( tag[i] == index )
         {
             tag[i] = -1;
-            busy[index] = 0;
-            registers[i] = value;
+            RRFbusy[index] = 0;
+            busy[i] = 0;
         }
     }
-    renamedRegisters[index] = value;
+    registers[index] = value;
+    valid[index-NoOfRegisters]  = 0;
 }
+
+bool isValid ( int registerTag )
+{
+    if ( registerTag < NoOfRegisters )
+    {
+        if ( busy[registerTag] )
+        {
+            if ( tag[registerTag] != -1 )
+            {
+                if ( valid[tag[registerTag]-NoOfRegisters] == 1 )
+                    return 1;
+                else
+                    return 0;
+            }
+            else
+            {
+                cout << "Error : Register renamed , Busy but Tag not found!!";
+                exit(-1);
+            }
+        }
+        else
+            return 1;
+    }
+    else
+    {
+        if ( RRFbusy [ registerTag - NoOfRegisters ] == 1 )
+        {
+            if ( valid[registerTag-NoOfRegisters] == 1 )
+                return 1;
+            else
+                return 0;
+        }
+        else
+        {
+                cout << "Renamed register but not busy !! " << endl;
+                exit(-1);
+       }
+
+    }
+    return 0;
+}
+
+int getValue ( int regTag )
+{
+    if ( regTag < 31 )
+    {
+        if ( busy[regTag] )
+        {
+            if ( valid[tag[regTag] - NoOfRegisters] )
+                return registers[tag[regTag] - NoOfRegisters];
+            else
+            {
+                cout << " Error : Not valid , but asking for value" << endl;
+                exit(-1);
+            }
+        }
+        else
+        {
+            return registers[regTag];
+        }
+    }
+    else
+    {
+        if ( valid [ regTag - NoOfRegisters ] )
+            return registers [ regTag ];
+        else
+            cout << "Error : Not a valid renamed register !!" << endl;
+    }
+    return -1;
+}
+
+int getTag ( int regTag )
+{
+    if ( regTag > NoOfRegisters - 1 )
+        return regTag;
+    else
+    {
+        return tag[regTag];
+    }
+}
+
+

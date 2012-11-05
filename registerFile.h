@@ -27,10 +27,12 @@ class RegisterFile
 {
     private:
         // Signed int / float registers for storing both positive and negative numbers
-        T registers[NoOfRegisters];        
+        T registers[NoOfRegisters + NoOfRenameRegisters];        
+        bool busy[NoOfRegisters];
+        bool RRF[NoOfRenameRegisters];
         int tag[NoOfRegisters];
-        T renamedRegisters[NoOfRenameRegisters];
-        bool busy[NoOfRenameRegisters];
+        int valid[NoOfRenameRegisters];
+        
 
         bool readPorts[READPORTS], writePorts[WRITEPORTS];
 
@@ -43,7 +45,12 @@ class RegisterFile
         void setWritePortsValue( int number , int SetorUnset );
 
         int renameVariable ( int index );
-        void updateRegisters ( int tag );
+        void updateRegisters ( int regTag );
+        void finishExecutionRegister ( int index );
+
+        bool isValid ( int regTag );
+        int getValue ( int regTag );
+        int getTag ( int regTag );
 
         void printContents();
 };
