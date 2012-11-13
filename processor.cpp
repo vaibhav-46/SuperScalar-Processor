@@ -97,7 +97,7 @@ void Processor::addInstruction ( string hexValue )
  *      3. Update Reservation Station for the indices and new values received. ( void )
  *      4. Execute the instructions present in the FU. ( Returns the list of registers whose values have been changed )
  *      5. Dispatch the next set of instructions. ( List of all instructions that are currently in the FU )
- *      6. ID - Decode instructions and add them to reservation station. ( TODO : find out )
+ *      6. ID - Decode instructions and add them to reservation station. 
  *      7. IF - Fetch the next k instructions. ( New structure - list of instructions , whether in the BTB , PCvalue  )
 */
 void Processor::execute()
@@ -105,21 +105,48 @@ void Processor::execute()
      int bool = reOrderBuffer.commit();
 }
 
-void Processor::getInstructions ( int numberIns , int PC ,newInstr * listIns )
+void Processor::decodeInstructions ( newInstr * listIns , int numberIns )
+{
+    for ( int i = 0 ; i < numberIns ; i++ )
+    {
+        insInfo returnVal= listIns[i].ins->ID();       // TODO : Define the Return structure 
+        if ( returnVal.branch )
+        {
+            // TODO : add to reservation station and ROB
+            if ( i == numberIns - 1 )
+            {
+                if ( PC != returnVal.branchAddress )
+                {
+                    PC = returnVal.branchAddress;
+                    return;
+                }
+            }
+            else
+            {
+                if ( returnVal.branchAddress != listIns[i+1].PC )
+                {
+                    PC = returnVal.branchAddress;
+                    return;
+                }
+            }
+        }
+
+    }
+}
+
+int Processor::getInstructions ( int numberIns , newInstr * listIns )
 {
     for ( int i = 0 ; i < numberIns ; i++ )
     {
         if ( PC == sCount )
-            return;
+            return i+1;
         else
         {
             listIns[i].ins = listInstructions[PC];
             listIns[i].PC = PC;
             int branchAddress = btb.getBranchAddress ( PC );
             if ( branchAddress == -1 )
-            {
                 PC = PC + 1;
-            }
             else
             {
                 bool p = branchPredictor.predictBranch( PC );
@@ -130,6 +157,7 @@ void Processor::getInstructions ( int numberIns , int PC ,newInstr * listIns )
             }
         }
     }
+    return i+1;
 }
 
 void Processor::printDetails ()

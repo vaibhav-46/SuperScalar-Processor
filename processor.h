@@ -23,6 +23,9 @@
 #include "branch.h"
 
 #define MAXINSTRUCTIONS 1000
+#define ADD_LEVEL 4
+#define MUL_LEVEL 7
+#define DIV_LEVEL 10
 
 typedef struct _newInstr
 {
@@ -39,6 +42,7 @@ class Processor
         ROB reOrderBuffer;
         BTB btb;
         BranchPrediction branchPredictor;
+        funcUnit FUdetails;
 
         double PC;
         unsigned int jCount , iCount , rCount , sCount;

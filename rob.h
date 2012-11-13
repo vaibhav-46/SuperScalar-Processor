@@ -23,20 +23,31 @@
 
 #include <vector>
 #include "instructions.h"
+#include "registerFile.h"
 
 #define ROBSIZE 100
+
+typedef struct _funcUnit
+{
+    bool execute;
+    bool fAdd[ADD_LEVEL];
+    bool fMul[MUL_LEVEL];
+    bool fDiv[DIV_LEVEL];
+}funcUnit;
+
 
 typedef struct _robentry
 {
     bool busy;
     bool issued;
-    bool finished;
-    int PCaddress;
-    int renameRegister;
     int destinationRegister;
-    bool speculative;
     bool valid;
+    int stage
+    bool intResult;
+    float final;
     Instruction *ins;
+    float op1 , op2;
+    bool isBranch;
 }insDetails;
 
 class ROB
@@ -48,10 +59,10 @@ class ROB
     public:
         ROB();
 
-        void addInsRob();
+        int addInsRob(Instruction *p );
         void execute();
-        void commitIns();
+        void updateOperands ( int , float , float );
+        void commitIns(RegisterFile & intRegFile , RegisterFile &floatRegFile );
 };
-
 
 #endif

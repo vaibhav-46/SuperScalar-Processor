@@ -27,12 +27,14 @@
 typedef struct _entry
 {
     bool busy;
-    int opcode;
     int dataTag;
     bool valid;
     int datatag2;
     bool valid2;
     bool readyForDispatch;
+    int robIndex;
+    int destination;
+    bool doesWrite;
 }insEntry;
 
 class ReservationStation
@@ -40,14 +42,12 @@ class ReservationStation
     private:
         insEntry instructions[SIZEOFSTATION];        
         static bool centralized = 1;
-        int robIndex;
 
     public:
-        ReservationStation();
 
-        void fillReservationStation(int PC , Instruction *insList );          // For every instruction added to the Reservation Station , add it to the ROB in Program order
-        void updateReservationStation();
-        void dispatchInstructions();            // Set up the dispatched bit in the ROB for all instructions that can be dispatched
+        void fillReservationStation(int PC , Instruction *insList , ROB &reOrderBuffer );          // For every instruction added to the Reservation Station , add it to the ROB in Program order
+        void updateReservationStation(int *);
+        int dispatchInstructions(ROB &reOrderBuffer );            // Set up the dispatched bit in the ROB for all instructions that can be dispatched
 
 };
 
