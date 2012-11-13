@@ -21,7 +21,8 @@
 #ifndef ROB_H
 #define ROB_H
 
-#include <queue>
+#include <vector>
+#include "instructions.h"
 
 #define ROBSIZE 100
 
@@ -32,14 +33,16 @@ typedef struct _robentry
     bool finished;
     int PCaddress;
     int renameRegister;
+    int destinationRegister;
     bool speculative;
     bool valid;
+    Instruction *ins;
 }insDetails;
 
 class ROB
 {
     private:
-        queue<insDetails> robEntries;
+        vector<insDetails> robEntries;
         int index;
 
     public:

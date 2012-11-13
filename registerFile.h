@@ -20,19 +20,15 @@
 #define REGISTERFILE_H
 
 #define NoOfRegisters 32
-#define NoOfRenameRegisters 3*32
 
 template <typename T>
 class RegisterFile
 {
     private:
         // Signed int / float registers for storing both positive and negative numbers
-        T registers[NoOfRegisters + NoOfRenameRegisters];        
+        T registers[NoOfRegisters];        
         bool busy[NoOfRegisters];
-        bool RRF[NoOfRenameRegisters];
         int tag[NoOfRegisters];
-        int valid[NoOfRenameRegisters];
-        
 
         bool readPorts[READPORTS], writePorts[WRITEPORTS];
 

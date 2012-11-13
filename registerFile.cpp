@@ -27,12 +27,6 @@ RegisterFile RegisterFile()
         busy[i] = 0;
         tag[i] = -1;
     }
-    for ( i = 0; i < NoOfRenameRegisters ; i++ )
-    {
-        registers[ NoOfRegisters + i ] = 0;
-        valid[i] = 0;
-        RRFbusy[i] = 0;
-    }
 }
 
 int RegisterFile::noPortsWritable ()

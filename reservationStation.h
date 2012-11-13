@@ -19,6 +19,9 @@
 #ifndef RESERVATIONSTATION_H
 #define RESERVATIONSTATION_H
 
+#include "rob.h"
+#include "instruction.h"
+
 #define SIZEOFSTATION 10
 
 typedef struct _entry
@@ -37,11 +40,12 @@ class ReservationStation
     private:
         insEntry instructions[SIZEOFSTATION];        
         static bool centralized = 1;
+        int robIndex;
 
     public:
         ReservationStation();
 
-        void fillReservationStation();          // For every instruction added to the Reservation Station , add it to the ROB in Program order
+        void fillReservationStation(int PC , Instruction *insList );          // For every instruction added to the Reservation Station , add it to the ROB in Program order
         void updateReservationStation();
         void dispatchInstructions();            // Set up the dispatched bit in the ROB for all instructions that can be dispatched
 
