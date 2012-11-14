@@ -46,7 +46,7 @@ class ReservationStation
     public:
 
         void fillReservationStation(int PC , Instruction *insList , ROB &reOrderBuffer );          // For every instruction added to the Reservation Station , add it to the ROB in Program order
-        void updateReservationStation(int *);
+        void updateReservationStation(int Tag , int Value );
         int dispatchInstructions(ROB &reOrderBuffer );            // Set up the dispatched bit in the ROB for all instructions that can be dispatched
 
 };

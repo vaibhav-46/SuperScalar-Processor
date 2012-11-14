@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-void fillReservationStation ( int PC , Instruction *insList , ROB &reOrderBuffer )
+void fillReservationStation ( int PC , Instruction *insList , ROB &reOrderBuffer , int count )
 {
     int j = 0;
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
@@ -31,28 +31,30 @@ void fillReservationStation ( int PC , Instruction *insList , ROB &reOrderBuffer
 
             reOrderBuffer.addInsRob ( insList[j] );
             j++;
+            if ( j == count )
+                break;
         }
     }
 }
 
-void updateReservationStation(int *p)
+void updateReservationStation(int index , int value )
 {
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
         if ( ! instructions[i].valid )
         {
-            if ( p[dataTag] != -1769 )
+            if ( instructions[i].dataTag == index )
             {
-                instructions[i].dataTag = p[dataTag];
-                instructions[i].valid = true;
+                instructions[i].dataTag = value;
+                instructions[i].valid = 1;
             }
-        }
+       }
         if ( ! instructions[i].valid2 )
         {
-            if ( p[dataTag2] != -1769 )
+            if ( instructions[i].dataTag2 == index )
             {
-                instructions[i].dataTag2 = p[dataTag2];
-                instructions[i].valid2 = true;
+                instructions[i].dataTag2 = value;
+                instructions[i].valid2 = 1;
             }
         }
         if ( instructions[i].valid && instructions[i].valid2 )
@@ -68,8 +70,9 @@ int dispatchInstructions ( ROB & reOrderBuffer )
         if ( instructions[i].readyForDispatch )
         {
             reOrderBuffer.updateData ( instructions[i].robIndex , instructions[i].dataTag , instructions[i].dataTag2 , instructions[i].doesWrite , instructions[i].destination );
-            int count = 0;
+            count++;
             instructions[i].busy = 0;
         }
     }
+    return count;
 }

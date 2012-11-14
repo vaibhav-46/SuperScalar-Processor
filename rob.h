@@ -60,7 +60,7 @@ class ROB
         ROB();
 
         int addInsRob(Instruction *p );
-        void execute();
+        void execute(reservationStation &);
         void updateOperands ( int , float , float );
         void commitIns(RegisterFile & intRegFile , RegisterFile &floatRegFile );
 };

@@ -3,10 +3,10 @@
  *
  *       Filename:  instructions.h
  *
- *    Description:  Class of Instructions for the processor
+ *    Description:  Instructions Header file ( Takes all different types of instructions into account )
  *
  *        Version:  1.0
- *        Created:  Tuesday 06 November 2012 07:53:36  IST
+ *        Created:  Tuesday 13 November 2012 03:20:50  IST
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,76 +16,72 @@
  * =====================================================================================
  */
 
-
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
+
+typedef struct _insInfo
+{
+    bool branch;
+    int nextPC;
+    float op1;
+    float op2;
+    int destination;
+    bool op1tag;
+    bool op2tag;
+}insInfo;
 
 class Instruction
 {
     public:
         unsigned int instruction;
-        unsigned int stage;
+        insInfo insInfo;
 
         Instruction ( unsigned int ins );
         Instruction ();
-        unsigned int IFstage();
-        virtual unsigned int IDstage( unsigned int* updatingRegisters , unsigned int* gotValueRegisters , RegisterFile & registerFile );
-        virtual unsigned int EXstage ( unsigned int *updatingRegisters  , unsigned int *gotValueRegisters , RegisterFile & registerFile );
-        virtual unsigned int MEMstage ( unsigned int *updatingRegisters , unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int WBstage(RegisterFile & registerFile );
-        virtual unsigned int execute( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int getStage ();
-};
-
-class IInstruction : public Instruction
-{
-    public:
-        unsigned int opcode , source , second , immediate;
-        unsigned int value;
-
-        IInstruction(unsigned int ins);
-        IInstruction();
-        virtual unsigned int execute( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int IDstage( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int EXstage ( unsigned int *updatingRegisters , unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int MEMstage ( unsigned int *updatingRegisters , unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int WBstage(RegisterFile & registerFile );
-        unsigned int computeValue(unsigned int registers[]);
-        void updateUpdatingRegisters( unsigned int *updatingRegisters);
-        void clearBothRegisterArrays ( unsigned int *updatingRegisters, unsigned int *gotValueRegisters);
-        virtual unsigned int getStage ();
-};
-
-
-class RInstruction : public Instruction
-{
-    public: 
-        unsigned int opcode , source , second , destination , shamt , func;
-        unsigned int value;
-    
-        RInstruction(unsigned int ins);
-        RInstruction();
-        virtual unsigned int execute( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int IDstage( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int EXstage ( unsigned int *updatingRegisters , unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int MEMstage ( unsigned int *updatingRegisters , unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int WBstage(RegisterFile & registerFile );
-        unsigned int computeValue(unsigned int registers[]);
-        void updateUpdatingRegisters( unsigned int *updatingRegisters);
-        void clearBothRegisterArrays ( unsigned int *updatingRegisters, unsigned int *gotValueRegisters);
-        virtual unsigned int getStage ();
+        insInfo IDstage();
+        float WBstage();            // TODO : Figure out what to do in this stage 
+        float execute();            // Maybe in this , once we are done executing the instruction , we then compute the memory location if necessary.
 };
 
 class JInstruction : public Instruction
 {
     public:
-        unsigned int opcode , offset;
+        unsigned int instruction;
+        insInfo insInfo;
 
         JInstruction ( unsigned int ins );
-        JInstruction();
-        virtual unsigned int execute( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int IDstage( unsigned int *updatingRegisters, unsigned int *gotValueRegisters, RegisterFile & registerFile );
-        virtual unsigned int getStage ();
+        JInstruction ();
+        insInfo IDstage();
+        float WBstage();            // TODO : Figure out what to do in this stage 
+        float execute();            // Maybe in this , once we are done executing the instruction , we then compute the memory location if necessary.
 };
+
+class RInstruction : public Instruction
+{
+    public:
+        unsigned int instruction;
+        insInfo insInfo;
+
+        RInstruction ( unsigned int ins );
+        RInstruction ();
+        insInfo IDstage();
+        float WBstage();            // TODO : Figure out what to do in this stage 
+        float execute();            // Maybe in this , once we are done executing the instruction , we then compute the memory location if necessary.
+};
+
+class IInstruction : public Instruction
+{
+    public:
+        unsigned int instruction;
+        insInfo insInfo;
+
+        IInstruction ( unsigned int ins );
+        IInstruction ();
+        insInfo IDstage();
+        float WBstage();            // TODO : Figure out what to do in this stage 
+        float execute();            // Maybe in this , once we are done executing the instruction , we then compute the memory location if necessary.
+};
+
+
 
 #endif

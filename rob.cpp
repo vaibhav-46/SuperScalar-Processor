@@ -32,8 +32,7 @@ int addInsRob( Instruction *p )
     return robEntries.size()-1;
 }
 
-// TODO : Complete this function
-void execute ( )
+void execute ( ReservationStation &station )
 {
     vector<int>::iterator start , end;
     start = robEntries.begin();
@@ -41,20 +40,26 @@ void execute ( )
 
     funcUnit FUnit;
 
+    int index = -1;
     for ( start ; start != end ; start++ )
     {
         if ( ! start->busy )
+        {
+            index++;
             break;
+        }
         else
         {
+            index++;
             if ( start->issued && ! start->valid )
             {
-                if ( ins->canExecute ( stage ) )
+                if ( ins->canExecute ( stage , FUnit) )
                 {
-                    final = ins->execute(stage , op1 , op2 , FUnit );
+                    final = ins->execute(stage , op1 , op2 );
                     if ( ins->lastStage ( stage ) ) 
                     {
                         start->valid = 1;
+                        station.updateReservationStation ( index , final );
                     }
                 }
             }

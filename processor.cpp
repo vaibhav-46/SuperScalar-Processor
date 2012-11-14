@@ -105,37 +105,50 @@ void Processor::execute()
      int bool = reOrderBuffer.commit();
 }
 
-void Processor::decodeInstructions ( newInstr * listIns , int numberIns )
+int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
 {
-    for ( int i = 0 ; i < numberIns ; i++ )
+    int i = 0;
+    int flag = 0;
+    for ( i = 0 ; i < numberIns ; i++ )
     {
-        insInfo returnVal= listIns[i].ins->ID();       // TODO : Define the Return structure 
+        insInfo returnVal= listIns[i].ins->IDstage();       // TODO : Define the Return structure 
         if ( returnVal.branch )
         {
-            // TODO : add to reservation station and ROB
             if ( i == numberIns - 1 )
             {
-                if ( PC != returnVal.branchAddress )
+                if ( PC != returnVal.nextPC )
                 {
-                    PC = returnVal.branchAddress;
-                    return;
+                    PC = returnVal.nextPC;
+                    flag = 1;
+                    break;
                 }
             }
             else
             {
-                if ( returnVal.branchAddress != listIns[i+1].PC )
+                if ( returnVal.nextPC != listIns[i+1].PC )
                 {
-                    PC = returnVal.branchAddress;
-                    return;
+                    PC = returnVal.nextPC;
+                    flag = 1;
+                    break;
                 }
             }
         }
-
+    }
+    if ( flag )
+    {
+        listIns[i+1] = NULL;
+        return i+1;
+    }
+    else
+    {
+        listIns[i] = NULL;
+        return i;
     }
 }
 
 int Processor::getInstructions ( int numberIns , newInstr * listIns )
 {
+    cout << "Getting Instructions : " << numberIns << endl;
     for ( int i = 0 ; i < numberIns ; i++ )
     {
         if ( PC == sCount )
