@@ -33,12 +33,12 @@ typedef struct _insInfo
 class Instruction
 {
     public:
-        unsigned int instruction;
+        int instruction;
         insInfo insInfo;
 
-        Instruction ( unsigned int ins );
+        Instruction (  int ins );
         Instruction ();
-        insInfo IDstage();
+        insInfo IDstage(int PC);
         float WBstage();            // TODO : Figure out what to do in this stage 
         float execute();            // Maybe in this , once we are done executing the instruction , we then compute the memory location if necessary.
 };
@@ -46,10 +46,10 @@ class Instruction
 class JInstruction : public Instruction
 {
     public:
-        unsigned int instruction;
+         int instruction;
         insInfo insInfo;
 
-        JInstruction ( unsigned int ins );
+        JInstruction (  int ins );
         JInstruction ();
         insInfo IDstage();
         float WBstage();            // TODO : Figure out what to do in this stage 
@@ -59,10 +59,10 @@ class JInstruction : public Instruction
 class RInstruction : public Instruction
 {
     public:
-        unsigned int instruction;
+         int instruction;
         insInfo insInfo;
 
-        RInstruction ( unsigned int ins );
+        RInstruction (  int ins );
         RInstruction ();
         insInfo IDstage();
         float WBstage();            // TODO : Figure out what to do in this stage 
@@ -72,10 +72,10 @@ class RInstruction : public Instruction
 class IInstruction : public Instruction
 {
     public:
-        unsigned int instruction;
+         int instruction;
         insInfo insInfo;
 
-        IInstruction ( unsigned int ins );
+        IInstruction (  int ins );
         IInstruction ();
         insInfo IDstage();
         float WBstage();            // TODO : Figure out what to do in this stage 
