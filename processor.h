@@ -33,6 +33,11 @@ typedef struct _newInstr
     int PC;
 }newInstr;
 
+
+
+// TODO : 
+//      1. Store buffer update ( Have to add memory i.e cache )
+//      2. Add Store buffer
 class Processor
 {
     public:

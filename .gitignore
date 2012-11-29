@@ -12,3 +12,4 @@
 *.a
 
 instructions_backup.h
+*.swp
