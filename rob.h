@@ -26,13 +26,18 @@
 #include "registerFile.h"
 
 #define ROBSIZE 100
+#define MUL_LATENCY 3
+#define DIV_LATENCY 2
+#define ADD_LATENCY 1
+#define BIT_LATENCY 1
 
 typedef struct _funcUnit
 {
     bool execute;
-    bool fAdd[ADD_LEVEL];
-    bool fMul[MUL_LEVEL];
-    bool fDiv[DIV_LEVEL];
+    bool mul[MUL_LATENCY];
+    bool div[DIV_LATENCY];
+    bool add[ADD_LATENCY];
+    bool bitOp[BIT_LATENCY];
 }funcUnit;
 
 
@@ -62,7 +67,7 @@ class ROB
         int addInsRob(Instruction *p );
         void execute(reservationStation &);
         void updateOperands ( int , float , float );
-        void commitIns(RegisterFile & intRegFile , RegisterFile &floatRegFile );
+        void commitIns(RegisterFile & intRegFile );
 };
 
 #endif

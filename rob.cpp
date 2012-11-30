@@ -67,7 +67,7 @@ void execute ( ReservationStation &station )
     }
 }
 
-bool commitIns( RegisterFile & intRegisterFile , RegisterFile & floatReisterFile  )
+bool commitIns( RegisterFile & intRegisterFile )
 {
     if ( robEntries[0].busy )
     {
@@ -75,27 +75,14 @@ bool commitIns( RegisterFile & intRegisterFile , RegisterFile & floatReisterFile
         {
             if ( !isBranch )
             {
-                if ( intResult )
-                {
                     if ( intRegisterFile.tag[destinationRegister] == 0 )
                     {
                         intRegisterFile.tag[destinationRegister] = -1;
                         intRegisterFile.busy[destinationRegister] = 0;
                         intRegisterFile.registers[destinationRegister] = (int)final;
                     }
-                }
-                else
-                {
-                    if ( floatRegisterFile.tag[destinationRegister] == 0 )
-                    {
-                        floatRegisterFile.tag[destinationRegister] = -1;
-                        floatRegisterFile.busy[destinationRegister] = 0;
-                        floatRegisterFile.registers[destinationRegister] = (int)final;
-                    }
-                }
             }
             intRegisterFile.updateRegisterTags();
-            floatRegisterFile.updateRegisterTags();
             // TODO : Remove the zeroth element of the vector
             return 1;
         }

@@ -26,10 +26,24 @@ void fillReservationStation ( int PC , Instruction *insList , ROB &reOrderBuffer
         else
         {
             instructions[i].busy = 1;
-            insList[j]->getDetails();       // A new structure 
+            insInfo insDetails = insList[j]->getDetails();       // A new structure 
             // TODO : Fill in the rest of the values using the structure
+            instructions[i].dataTag = insDetails.op1;
+            instructions[i].dataTag2 = insDetails.op2;
+            instructions[i].valid = insDetails.op1tag;
+            instructions[i].valid2 = insDetails.op2tag;
 
-            reOrderBuffer.addInsRob ( insList[j] );
+            if ( instructions[i].valid && instructions[i].valid2 )
+                instructions[i].readyForDispatch = true;
+            else
+                instructions[i].readyForDispatch = false;
+
+            int renameIndex = reOrderBuffer.addInsRob ( insList[j] );
+            instructions[i].robIndex = renameIndex;
+            instructions[i].destination = insDetails.destination;
+            instructions[i].doesWrite = insDetails.doesWrite;
+            // TODO : Rename the output register of the command 
+
             j++;
             if ( j == count )
                 break;

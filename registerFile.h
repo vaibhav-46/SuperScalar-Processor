@@ -43,9 +43,9 @@ class RegisterFile
         int renameTag ( int index , int ROBindex );
         void updateRegisters ( int regTag );
 //
-//        bool isValid ( int regTag );
-//        int getValue ( int regTag );
-//        int getTag ( int regTag );
+        bool isValid ( int regTag );
+        int getValue ( int regTag );
+        int getTag ( int regTag );
 //
         void printContents();
         void updateRegisterTags();

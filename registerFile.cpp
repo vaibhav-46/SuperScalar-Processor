@@ -142,3 +142,21 @@ void updateRegisterTags ()
             tags[i]--;
     }
 }
+
+bool isValid ( int regTag )
+{
+    if ( busy[regTag] )
+        return 0;
+    else
+        return 1;
+}
+
+int getValue ( int regTag )
+{
+    return registers[regTag];
+}
+
+int getTag ( int regTag )
+{
+    return tag[regTag];
+}

@@ -103,15 +103,17 @@ void Processor::addInstruction ( string hexValue )
 void Processor::execute()
 {
      int bool = reOrderBuffer.commit();
+     // TODO : Have to write the execute instructions. Still pending ( To be written in the end )
 }
 
+// TODO : For each instruction , add to the Reservation Station ( not all at once )
 int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
 {
     int i = 0;
     int flag = 0;
     for ( i = 0 ; i < numberIns ; i++ )
     {
-        insInfo returnVal= listIns[i].ins->IDstage();       // TODO : Define the Return structure 
+        insInfo returnVal= listIns[i].ins->IDstage();      
         if ( returnVal.branch )
         {
             if ( i == numberIns - 1 )
