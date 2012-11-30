@@ -19,9 +19,15 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
-#define MUL_LATENCY 2
+#define ADD_ALU 2
+#define MUL_ALU 2
+#define DIV_ALU 2
+#define BIT_ALU 2
+#define MUL_LATENCY 3
 #define DIV_LATENCY 2
 #define ADD_LATENCY 1
+#define BIT_LATENCY 1
+
 
 typedef struct _insInfo
 {
@@ -40,65 +46,65 @@ class Instruction
     public:
         int instruction;
         insInfo insSet;
+        int stage;
 
         Instruction (  int ins );
         Instruction ();
         insInfo IDstage(int PC);
-        float execute();            // Maybe in this , once we are done executing the instruction , we then compute the memory location if necessary.
+        int execute ( int stage , int op1 , int op2 )
         void commit();
-        // TODO : In canExecute , make sure you take FUnit by reference and update the ALU unit corresponding entry
         int canExecute (funcUnit & FUnit);          // Arguments to be given to this
-        int lastStage();            // If execution completed  ( Instruction Dependent )
+        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
 };
 
 class JInstruction : public Instruction
 {
     public:
-        int instruction;
         insInfo insSet;
+        int stage;
 
         JInstruction (  int ins );
         JInstruction ();
         insInfo IDstage();
-        float execute();   
+        int execute ( int stage , int op1 , int op2 )
         void commit();
         int canExecute ();          // Arguments to be given to this
-        int lastStage();            // If execution completed  ( Instruction Dependent )
+        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
 };
 
 class RInstruction : public Instruction
 {
     public:
-        int instruction;
-        unsigned int opcode , source , second , destination, shamt , function;
+        int opcode , source , second , destination, shamt , function;
         insInfo insSet;
+        int stage;
 
         RInstruction (  int ins );
         RInstruction ();
         insInfo IDstage();
-        float execute();    
+        int execute ( int stage , int op1 , int op2 )
         void commit();
         int canExecute ();          // Arguments to be given to this
-        int lastStage();            // If execution completed  ( Instruction Dependent )
+        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
 };
 
 class IInstruction : public Instruction
 {
     public:
-        int instruction;
-        unsigned int opcode , offset;
+        int opcode , offset, source , second , immediate;
         insInfo insSet;
+        int stage;
 
         IInstruction (  int ins );
         IInstruction ();
         insInfo IDstage();
-        float execute();     
+        int execute ( int stage , int op1 , int op2 )
         void commit();
         int canExecute ();          // Arguments to be given to this
-        int lastStage();            // If execution completed  ( Instruction Dependent )
+        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
 };
 

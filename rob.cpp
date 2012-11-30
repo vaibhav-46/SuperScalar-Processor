@@ -32,12 +32,13 @@ int addInsRob( Instruction *p )
     return robEntries.size()-1;
 }
 
-void execute ( ReservationStation &station )
+// TODO HACK : Returns the next PC value in case of a branch instruction ( if branch is not yet found, return -1 )  [ Figure out a way to determine if the branch has been executed and returns the PC value and only return that . Else return -1 )
+int execute ( ReservationStation &station )
 {
     vector<int>::iterator start , end;
     start = robEntries.begin();
     end = robEntries.end();
-
+    returnVal = -1;
     funcUnit FUnit;
 
     int index = -1;
@@ -60,11 +61,16 @@ void execute ( ReservationStation &station )
                     {
                         start->valid = 1;
                         station.updateReservationStation ( index , final );
+                        if ( returnVal == -1 && start->isBranch )
+                            returnVal = final;
                     }
+                    else
+                        stage++;
                 }
             }
         }
     }
+    return returnVal;
 }
 
 bool commitIns( RegisterFile & intRegisterFile )
@@ -75,6 +81,7 @@ bool commitIns( RegisterFile & intRegisterFile )
         {
             if ( !isBranch )
             {
+                robEntries[0].ins->commit();
                     if ( intRegisterFile.tag[destinationRegister] == 0 )
                     {
                         intRegisterFile.tag[destinationRegister] = -1;
@@ -90,11 +97,12 @@ bool commitIns( RegisterFile & intRegisterFile )
     return 0;
 }
 
-void updateData ( int index , float operand1 , float operand2 , bool doesWrite , int destination )
+void updateData ( int index , float operand1 , float operand2 , bool doesWrite , int destination, bool isInsBranch )
 {
     robEntries[index].op1 = operand1;
     robEnries[index].op2 = operand2;
     robEntries[index].issued = 1;
     robEntries[index].branch = !doesWrite;
     robEntries[index].destinationRegister = destination;
+    robEntries[index].isBranch = isInsBranch;
 }

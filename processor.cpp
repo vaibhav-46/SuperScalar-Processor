@@ -106,6 +106,7 @@ void Processor::execute()
      // TODO : Have to write the execute instructions. Still pending ( To be written in the end )
 }
 
+// TODO : In case of branch instruction with no return address, stall all further instructions till the return address is got and add appropriate register values for the later on instructions to get values.
 // TODO : For each instruction , add to the Reservation Station ( not all at once )
 int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
 {

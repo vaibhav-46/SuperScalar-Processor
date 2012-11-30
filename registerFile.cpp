@@ -146,9 +146,9 @@ void updateRegisterTags ()
 bool isValid ( int regTag )
 {
     if ( busy[regTag] )
-        return 0;
+        return false;
     else
-        return 1;
+        return true;
 }
 
 int getValue ( int regTag )
