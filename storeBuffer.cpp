@@ -29,7 +29,7 @@ void StoreBuffer::addFinishedStore ( int address , int value  )
     finishedStores.push_back(newEntry);
 }
 
-void StoreBuffer::writeBack ( int address , float * memory )
+void StoreBuffer::writeBack ( int address , int * memory )
 {
     vector<storeBufferEntry>::iterator beginIt , endIt;
     beginIt = finishedStores.begin();
@@ -56,7 +56,7 @@ void StoreBuffer::writeBack ( int address , float * memory )
     }
 }
 
-float StoreBuffer::loadForwardingValue ( int address )
+int StoreBuffer::loadForwardingValue ( int address )
 {
     vector<storeBufferEntry>::iterator beginIt , endIt;
     beginIt = finishedStores.begin();

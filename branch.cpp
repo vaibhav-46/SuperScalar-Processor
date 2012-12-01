@@ -22,7 +22,7 @@ using namespace std;
 
 BTB::BTB()
 {
-    for ( int i = 0 ; i < BTBsize ; i++ )
+    for ( int i = 0 ; i < BTBSIZE ; i++ )
     {
         entries[i].PC = -1;
         entries[i].branchAddress = -1;
@@ -49,7 +49,7 @@ void BTB::addBranchAddress ( int currentPC , int currentBranchAddress )
         return;
     while ( entries[i].PC != -1 )
         i++;
-    if ( i == BTBsize )
+    if ( i == BTBSIZE )
         i = 0;
     entries[i].PC = currentPC;
     entries[i].branchAddress = currentBranchAddress;
@@ -59,11 +59,11 @@ BranchPrediction::BranchPrediction()
 {
     for ( int i = 0 ; i < HISTORY_TABLE_LENGTH ; i++ )
         historyTableEntries[i] = 0;
-    for ( int i = 0; i < 2^NO_OF_BITS ; i++ )
+    for ( int i = 0; i < 8 ; i++ )
         localPredictionEntries[i] = 0;
 }
 
-bool predictBranch ( int currentPC )
+bool BranchPrediction::predictBranch ( int currentPC )
 {
     int index = 0;
     for ( int i = 0; i < NO_OF_BITS ; i++ )
@@ -78,7 +78,7 @@ bool predictBranch ( int currentPC )
         return true;
 }
 
-void setBranchResult ( int currentPC , bool taken )
+void BranchPrediction::setBranchResult ( int currentPC , bool taken )
 {
     int index = 0;
     for ( int i = 0; i < NO_OF_BITS ; i++ )

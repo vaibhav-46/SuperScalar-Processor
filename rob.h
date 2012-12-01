@@ -64,7 +64,7 @@ class ROB
         int addInsRob(Instruction *p );
         int execute(ReservationStation &r);
         void updateData ( int , int , int, bool ,int , bool , int );
-        bool commitIns(RegisterFile & intRegFile );
+        bool commitIns(RegisterFile & intRegFile , StoreBuffer & storeBuffer , int * memory );
 };
 
 #endif

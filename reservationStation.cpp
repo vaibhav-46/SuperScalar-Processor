@@ -29,6 +29,8 @@ ReservationStation::ReservationStation()
     {
         instructions[i].busy = 0;
         instructions[i].readyForDispatch = 0;
+        instructions[i].dataTag = true;
+        instructions[i].dataTag2 = true;
     }
 }
 // Adds the instruction to the reservation station . Fills in all the appropriate values

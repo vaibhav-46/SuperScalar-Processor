@@ -29,6 +29,7 @@
 #define BIT_LATENCY 1
 
 class RegisterFile;
+class StoreBuffer;
 
 typedef struct _funcUnit
 {
@@ -56,13 +57,13 @@ class Instruction
     public:
         int instruction;
         insInfo insSet;
-        int stage;
+        int value;
 
         Instruction (  int ins );
         Instruction ();
         insInfo IDstage(int PC, RegisterFile & intRegisterFile);
         int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination);
+        void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer &storeBuffer , int * memory );
         bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
@@ -74,13 +75,14 @@ class JInstruction : public Instruction
     public:
         insInfo insSet;
         int opcode , offset;
-        int stage;
+        int value;
+        bool addFlag;
 
         JInstruction (  int ins );
         JInstruction ();
         insInfo IDstage(int PC, RegisterFile & intRegisterFile);
         int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination);
+        void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
         bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
@@ -92,13 +94,13 @@ class RInstruction : public Instruction
     public:
         int opcode , source , second , destination, shamt , func;
         insInfo insSet;
-        int stage;
+        int value;
 
         RInstruction (  int ins );
         RInstruction ();
         insInfo IDstage(int PC, RegisterFile & intRegisterFile);
         int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination);
+        void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
         bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
@@ -110,13 +112,15 @@ class IInstruction : public Instruction
     public:
         int opcode , offset, source , second , immediate;
         insInfo insSet;
-        int stage;
+        int value;
+        int tempStore;
+        bool addFlag;
 
         IInstruction (  int ins );
         IInstruction ();
         insInfo IDstage(int PC, RegisterFile & intRegisterFile);
         int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination);
+        void commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory );
         bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();

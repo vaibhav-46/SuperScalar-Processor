@@ -99,7 +99,6 @@ void Processor::addInstruction ( string hexValue )
  *      6. ID - Decode instructions and add them to reservation station. 
  *      7. IF - Fetch the next k instructions. ( New structure - list of instructions , whether in the BTB , PCvalue  )
 */
-// TODO : If branchSTall is found , then what to do
 void Processor::execute()
 {
     newInstr *insList = new newInstr[SIZEOFSTATION];
@@ -109,17 +108,28 @@ void Processor::execute()
     int execute, numberInsDispatched = 0;
     while ( ! ( (PC > sCount) && !commited && ( execute!=-1) && !(numberInsDecoded ) && !(numberInsGot) ) )
     {
-        commited = reOrderBuffer.commitIns(intRegisterFile);
+        commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory );
         execute = reOrderBuffer.execute( resStation );
         numberInsDispatched = resStation.dispatchInstructions ( reOrderBuffer );
         numberInsDecoded = decodeInstructions ( insList , numberInsGot );
+        while ( ! branchStall )
+        {
+            commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory );
+            execute = reOrderBuffer.execute ( resStation );
+            numberInsDispatched = resStation.dispatchInstructions ( reOrderBuffer );
+            numberInsDecoded += numberInsDispatched;
+            if ( execute != -1 )
+            {
+                PC = execute;
+                branchStall = false;
+            }
+        }
         if ( index == 0 )
             numberInsGot = getInstructions ( SIZEOFSTATION , insList );
         else
             numberInsGot = getInstructions ( numberInsDecoded , insList );
         index++;
     }
-        
 }
 
 int Processor::decodeInstructions ( newInstr * listIns , int numberIns )

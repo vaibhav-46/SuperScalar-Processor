@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "instructions.h"
 #include "registerFile.h"
+#include "storeBuffer.h"
 
 using namespace std;
 
@@ -43,11 +44,36 @@ insInfo Instruction::IDstage(int PC , RegisterFile & intRegisterFile )
     object.nextPC = PC + 1 ;
 }
 
-// Return the 
 int Instruction::execute ( int stage , int op1 , int op2 ,int PC )
 {
     return 0;
 }
+
+void Instruction::commit ( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory )
+{
+    return;
+}
+
+bool Instruction::canExecute ( int stage , funcUnit & FUnit )
+{
+    return true;
+}
+
+bool Instruction::lastStage ( int stage )
+{
+    return false;
+}
+
+insInfo Instruction::getDetails()
+{
+    return insSet;
+}
+
+int Instruction::computeValue ( int op1 , int op2 , int PC )
+{
+    return 0;
+}
+
 /* ---------------------- Instruction class dummy instructions end -------------------------------------- */
 
 
@@ -60,11 +86,12 @@ JInstruction::JInstruction ( int ins )
     int base = pow(2,26);
     offset = ins % base;
     opcode = ins / base;
+    addFlag = 1;
 }
 
 JInstruction::JInstruction ()
 {
-    stage = 0;
+    value = 0;
 }
 
 insInfo JInstruction::IDstage( int PC , RegisterFile & intRegisterFile )
@@ -84,7 +111,7 @@ insInfo JInstruction::IDstage( int PC , RegisterFile & intRegisterFile )
     }
 }
 
-void JInstruction::commit( RegisterFile & intRegisterFile , int destination )
+void JInstruction::commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory )
 {
     if ( opcode == 2 )
         return;
@@ -95,14 +122,10 @@ void JInstruction::commit( RegisterFile & intRegisterFile , int destination )
     }
 }
 
+// Since the return address is always given at the ID stage itself , we just have to return -1 and not the next PC
 int JInstruction::execute ( int stage , int op1 , int op2 , int PC )
 {
-    if ( opcode == 2 )
-        return 1;
-    else
-    {
-        return offset;
-    }
+    return -1;
 }
 
 bool JInstruction::canExecute(int stage , funcUnit & FUnit)
@@ -134,12 +157,13 @@ IInstruction::IInstruction ( int ins ) : Instruction ( ins )
     source = temp % 32;
     temp = temp / 32;
     opcode = temp;
+    addFlag = 1;
     cout << "I ins :"  << opcode << " " << source << " " << second << " " << immediate;
 }
 
 IInstruction::IInstruction()
 {
-    stage = 0;
+    value = 0;
 }
 
 insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
@@ -151,21 +175,31 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
         {
             switch(opcode)
             {
-                /*
-                // TODO : Set appropriate branch instructions for all these commands
                 case 4:
                     if ( intRegisterFile.getValue(source) == intRegisterFile.getValue(second) )
+                        insSet.nextPC = PC+immediate;
                     else
+                        insSet.nextPC = PC+1;
                 case 5:
                         if ( intRegisterFile.getValue(source) != intRegisterFile.getValue(second) )
+                            insSet.nextPC = PC+immediate;
                         else
+                            insSet.nextPC = PC+1;
                 case 6:
-                        if ( intRegisterFile.getValue(source) )
-                        */
+                        if ( intRegisterFile.getValue(source) <= 0 )
+                            insSet.nextPC = PC+immediate;
+                        else
+                            insSet.nextPC = PC+1;
+                case 7:
+                        if ( intRegisterFile.getValue(source) >= 0 )
+                            insSet.nextPC = PC+immediate;
+                        else
+                            insSet.nextPC = PC+1;
             }
         }
         else
         {
+            addFlag = false;
             insSet.nextPC = -1769;
             insSet.op1 = intRegisterFile.getTag(source);
             insSet.op2 = intRegisterFile.getTag(second);
@@ -202,11 +236,46 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
        }
        insSet.nextPC = PC + 1;
     }
-    else 
+    else if ( opcode < 40 )
     {
         insSet.branch = false;
         insSet.doesWrite = true;
-        // TODO : Figure out what to do for load-store
+        if ( intRegisterFile.isValid( source ) )
+        {
+            insSet.op1 = intRegisterFile.getValue ( source );
+            insSet.op1tag = true;
+        }
+        else
+        {
+            insSet.op1 = intRegisterFile.getTag ( source );
+            insSet.op1tag = false;
+        }
+        insSet.destination = second;
+    }
+    else
+    {
+        insSet.branch = false;
+        insSet.doesWrite = false;
+        if ( intRegisterFile.isValid( source ) )
+        {
+            insSet.op1 = intRegisterFile.getValue ( source );
+            insSet.op1tag = true;
+        }
+        else
+        {
+            insSet.op1 = intRegisterFile.getTag ( source );
+            insSet.op1tag = false;
+        }
+        if ( intRegisterFile.isValid( second ) )
+        {
+            insSet.op2 = intRegisterFile.getValue ( second );
+            insSet.op2tag = true;
+        }
+        else
+        {
+            insSet.op2 = intRegisterFile.getTag ( second );
+            insSet.op2tag = false;
+        }
     }
 }
 
@@ -221,7 +290,7 @@ bool IInstruction::lastStage (int stage)
         return true;
     else if ( opcode < 10 )
     {
-        if ( stage+1 == ADD_LATENCY )
+        if ( stage == ADD_LATENCY )
         {
             return true;
         }
@@ -230,14 +299,18 @@ bool IInstruction::lastStage (int stage)
     }
     else if ( opcode < 16 )
     {
-        if ( stage+1 == BIT_LATENCY )
+        if ( stage == BIT_LATENCY )
             return true;
         else
             return false;
     }
     else
-        // Assuming that load-store instructions take one cycle to compute the effective address
-        return true;
+    {
+        if ( stage == ADD_LATENCY )
+            return true;
+        else
+            return false;
+    }
 }
 
 bool IInstruction::canExecute(int stage , funcUnit & FUnit)
@@ -270,7 +343,15 @@ bool IInstruction::canExecute(int stage , funcUnit & FUnit)
     }
     else
     {
-        // TODO : Figure out what to do for load-store instructions
+        for ( int i = 0 ; i < ADD_ALU ; i++ )
+        {
+            if ( FUnit.add[i][stage-1] == 0 )
+            {
+                FUnit.add[i][stage-1] = 1;
+                return true;
+            }
+            return false;
+        }
     }
 }
 
@@ -332,13 +413,53 @@ int IInstruction::execute ( int stage , int op1 , int op2 , int PC )
     if ( ! lastStage(stage) )
         return -1;
     else
-        computeValue ( op1 , op2 , PC );
+    {
+        value = computeValue ( op1 , op2 , PC );
+        if ( opcode > 39 )
+            tempStore = op2;
+        if ( addFlag && opcode >= 8 )
+            return value;
+        else if ( addFlag && opcode < 8 )
+            return -1;
+        else if ( !addFlag )
+            return value;
+    }
 }
 
-// TODO : In case of load and store , save the value in the appropriate memory location/register
-void IInstruction::commit( RegisterFile & intRegisterFile , int destination )
+void IInstruction::commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory )
 {
-    return;
+    if ( opcode < 32 )
+        intRegisterFile.updateRegisters ( destination , value );
+    else if ( opcode == 32 )
+    {
+        if ( storeBuffer.isValueUpdated ( value ) )
+        {
+            intRegisterFile.updateRegisters ( destination , storeBuffer.loadForwardingValue ( value ) );
+        }
+        else
+        {
+            intRegisterFile.updateRegisters ( destination , memory[value] );
+        }
+    }
+    else if ( opcode == 34 )
+    {
+        int temp = 0;
+        for ( int i = 0 ; i < 4 ; i++ )
+        {
+            if ( storeBuffer.isValueUpdated ( value+i ) )
+                temp = temp *2+storeBuffer.loadForwardingValue ( value+i ) ;
+            else
+                temp = temp*2+ memory[value+i];
+        }
+        intRegisterFile.updateRegisters ( destination , temp );
+    }
+    else if ( opcode == 40 )
+        storeBuffer.addFinishedStore ( value , tempStore );
+    else if ( opcode == 42 )
+    {
+        for ( int i = 0 ; i < 4 ; i++ )
+            storeBuffer.addFinishedStore ( value+i , tempStore );
+    }
 }
 
 /* ---------------------- IInstruction class functions end ------------------------------------------------ */
@@ -366,7 +487,7 @@ RInstruction::RInstruction ( int  ins ): Instruction ( ins )
 
 RInstruction::RInstruction()
 {
-    stage = 0;
+    value = 0;
 }
 
 insInfo RInstruction::IDstage(int PC , RegisterFile & intRegisterFile )
@@ -461,28 +582,28 @@ bool RInstruction::lastStage ( int stage )
 {
     if ( opcode < 8 || opcode > 35 )
     {
-        if ( stage+1 == BIT_LATENCY )
+        if ( stage == BIT_LATENCY )
             return true;
         else
             return false;
     }
     else if ( opcode > 32 )
     {
-        if ( stage+1 == ADD_LATENCY )
+        if ( stage == ADD_LATENCY )
             return true;
         else
             return false;
     }
     else if ( opcode == 26 || opcode == 27 )
     {
-        if ( stage+1 == DIV_LATENCY )
+        if ( stage == DIV_LATENCY )
             return true;
         else
             return false;
     }
     else
     {
-        if ( stage+1 == MUL_LATENCY )
+        if ( stage == MUL_LATENCY )
             return true;
         else
             return false;
@@ -553,12 +674,15 @@ int RInstruction::execute ( int stage , int op1 , int op2 , int PC )
     if ( ! lastStage ( stage ) )
         return 1;
     else
-        return computeValue ( op1 , op2 , PC );
+    {
+        value = computeValue ( op1 , op2 , PC );
+        return value;
+    }
 }
 
-void RInstruction::commit ( RegisterFile & intRegisterFile, int PC )
+void RInstruction::commit ( RegisterFile & intRegisterFile, int destination , StoreBuffer & storeBuffer , int * memory )
 {
-    // TODO : Commit the instruction
+   intRegisterFile.updateRegisters ( destination , value ); 
 }
 
 /* ---------------------- RInstruction class functions end ------------------------------------------------ */

@@ -24,6 +24,7 @@
 #define NO_OF_BITS 3
 #define LENGTH_PREDICTOR 2
 
+
 typedef struct _BTBentry
 {
     int PC;
@@ -43,14 +44,13 @@ class BTB
 
 class BranchPrediction
 {
-    private:
-        int historyTableEntries[HISTORY_TABLE_LENGTH];
-        int localPredictionEntries[2^NO_OF_BITS];
-
     public:
+        int historyTableEntries[HISTORY_TABLE_LENGTH];
+        int localPredictionEntries[8];
+
         BranchPrediction();
         bool predictBranch ( int PC );
-        void setBranchResult ( int PC );
+        void setBranchResult ( int PC , bool taken );
 };
 
 #endif

@@ -33,6 +33,7 @@ int ROB::addInsRob( Instruction *p )
     newInsEntry->valid = 0;
     newInsEntry->issued = 0;
     newInsEntry->ins = p;
+    newInsEntry->stage = 1;
     robEntries.push_back(*newInsEntry);
     return robEntries.size()-1;
 }
@@ -78,7 +79,7 @@ int ROB::execute ( ReservationStation &station )
     return returnVal;
 }
 
-bool ROB::commitIns( RegisterFile & intRegisterFile )
+bool ROB::commitIns( RegisterFile & intRegisterFile , StoreBuffer & storeBuffer , int * memory )
 {
     if ( robEntries.size() > 0 )
     {
@@ -86,7 +87,7 @@ bool ROB::commitIns( RegisterFile & intRegisterFile )
         {
             if ( robEntries[0].valid )
             {
-                robEntries[0].ins->commit( intRegisterFile , robEntries[0].destinationRegister );
+                robEntries[0].ins->commit( intRegisterFile , robEntries[0].destinationRegister , storeBuffer , memory );
                 robEntries.erase( robEntries.begin() );
                 intRegisterFile.updateRegisterTags();
                 return 1;

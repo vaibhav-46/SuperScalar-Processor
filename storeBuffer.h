@@ -25,17 +25,18 @@
 struct storeBufferEntry 
 {
     int address;
-    float value;
+    int value;
 };
 
 class StoreBuffer
 {
+    public:
     std::vector<storeBufferEntry> finishedStores;
     std::vector<storeBufferEntry> completedStores;
 
     void addFinishedStore(int address, int value );
-    void writeBack ( int address, float *memory );
-    float loadForwardingValue ( int address );
+    void writeBack ( int address, int *memory );
+    int loadForwardingValue ( int address );
     bool isValueUpdated ( int address );
 };
 #endif
