@@ -17,7 +17,13 @@
  */
 
 #include <iostream>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "instructions.h"
+#include "registerFile.h"
+
+using namespace std;
 
 /*  --------------------- Instruction class dummy instructions  --------------------------------- */
 Instruction::Instruction( int ins )
@@ -30,7 +36,7 @@ Instruction::Instruction (  )
     instruction = -1;
 }
 
-insInfo Instruction::IDstage(int PC )
+insInfo Instruction::IDstage(int PC , RegisterFile & intRegisterFile )
 {
     insInfo object;
     object.branch = false;
@@ -38,7 +44,7 @@ insInfo Instruction::IDstage(int PC )
 }
 
 // Return the 
-int execute ( int stage , int op1 , int op2 )
+int Instruction::execute ( int stage , int op1 , int op2 ,int PC )
 {
     return 0;
 }
@@ -48,6 +54,71 @@ int execute ( int stage , int op1 , int op2 )
 
 /* ---------------------- JInstruction class functions ------------------------------------------------ */
 
+JInstruction::JInstruction ( int ins )
+: Instruction(ins)
+{
+    int base = pow(2,26);
+    offset = ins % base;
+    opcode = ins / base;
+}
+
+JInstruction::JInstruction ()
+{
+    stage = 0;
+}
+
+insInfo JInstruction::IDstage( int PC , RegisterFile & intRegisterFile )
+{
+    insSet.branch = true;
+    if ( opcode == 2 )
+    {
+        insSet.doesWrite = false;
+        insSet.nextPC = PC + offset;
+        return insSet;
+    }
+    else if ( opcode == 3 )
+    {
+        insSet.doesWrite = true;
+        insSet.nextPC = PC + offset;
+        return insSet;
+    }
+}
+
+void JInstruction::commit( RegisterFile & intRegisterFile , int destination )
+{
+    if ( opcode == 2 )
+        return;
+    else
+    {
+        intRegisterFile.updateRegisters ( destination , offset );
+        return;
+    }
+}
+
+int JInstruction::execute ( int stage , int op1 , int op2 , int PC )
+{
+    if ( opcode == 2 )
+        return 1;
+    else
+    {
+        return offset;
+    }
+}
+
+bool JInstruction::canExecute(int stage , funcUnit & FUnit)
+{
+    return 1;
+}
+
+bool JInstruction::lastStage ( int stage )
+{
+    return 1;
+}
+
+insInfo JInstruction::getDetails()
+{
+    return insSet;
+}
 /* ---------------------- JInstruction class functions end ------------------------------------------------ */
 
 
@@ -66,34 +137,36 @@ IInstruction::IInstruction ( int ins ) : Instruction ( ins )
     cout << "I ins :"  << opcode << " " << source << " " << second << " " << immediate;
 }
 
-int IInstruction::IInstruction()
+IInstruction::IInstruction()
 {
     stage = 0;
 }
 
-insInfo IDstage ( int PC , RegisterFile & intRegisterFile )
+insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
 {
     if ( opcode < 8 )
     {
         insSet.branch = true;
-        if ( intRegisterFile.isValid(op1) && intRegisterFile.isValid(op2) )
+        if ( intRegisterFile.isValid(source) && intRegisterFile.isValid(second) )
         {
-            switch(opcode):
+            switch(opcode)
             {
+                /*
                 // TODO : Set appropriate branch instructions for all these commands
                 case 4:
-                    if ( intRegisterFile.getValue(op1) == intRegisterFile.getValue(op2) )
+                    if ( intRegisterFile.getValue(source) == intRegisterFile.getValue(second) )
                     else
                 case 5:
-                        if ( intRegisterFile.getValue(op1) != intRegisterFile.getValue(op2) )
+                        if ( intRegisterFile.getValue(source) != intRegisterFile.getValue(second) )
                         else
                 case 6:
-                        if ( intRegisterFile.getValue(op1) )
+                        if ( intRegisterFile.getValue(source) )
+                        */
             }
         }
         else
         {
-            insSet.nextPC = 0;
+            insSet.nextPC = -1769;
             insSet.op1 = intRegisterFile.getTag(source);
             insSet.op2 = intRegisterFile.getTag(second);
             insSet.op1tag = false;
@@ -104,9 +177,9 @@ insInfo IDstage ( int PC , RegisterFile & intRegisterFile )
     }
     else if ( opcode < 16 )
     {
-       insSet.Branch = false; 
+       insSet.branch = false; 
        insSet.doesWrite = true;
-       insSet.destination = destination;
+       insSet.destination = second;
        if ( intRegisterFile.isValid ( source ) )
        {
            insSet.op1 = intRegisterFile.getValue(source);
@@ -131,7 +204,7 @@ insInfo IDstage ( int PC , RegisterFile & intRegisterFile )
     }
     else 
     {
-        insSet.Branch = false;
+        insSet.branch = false;
         insSet.doesWrite = true;
         // TODO : Figure out what to do for load-store
     }
@@ -142,7 +215,7 @@ insInfo IInstruction::getDetails ( )
     return insSet;
 }
 
-bool lastStage (int stage)
+bool IInstruction::lastStage (int stage)
 {
     if ( opcode < 8 )
         return true;
@@ -167,7 +240,7 @@ bool lastStage (int stage)
         return true;
 }
 
-bool IInstruction:canExecute(int stage , funcUnit & FUnit)
+bool IInstruction::canExecute(int stage , funcUnit & FUnit)
 {
     if ( opcode < 8 )
         return true;
@@ -187,9 +260,9 @@ bool IInstruction:canExecute(int stage , funcUnit & FUnit)
     {
         for ( int i = 0 ; i < BIT_ALU ; i++ )
         {
-            if ( FUnit.bit[i][stage-1] == 0 )
+            if ( FUnit.bitOp[i][stage-1] == 0 )
             {
-                FUnit.bit[i][stage-1] = 1;
+                FUnit.bitOp[i][stage-1] = 1;
                 return true;
             }
         }
@@ -201,7 +274,7 @@ bool IInstruction:canExecute(int stage , funcUnit & FUnit)
     }
 }
 
-int computeImmValue ( int op1 , int op2 , int PC )
+int IInstruction::computeValue ( int op1 , int op2 , int PC )
 {
     switch(opcode)
     {
@@ -234,7 +307,7 @@ int computeImmValue ( int op1 , int op2 , int PC )
         case 12:
             return op1 && immediate;
         case 13:
-            return op1 || imediate;
+            return op1 || immediate;
         case 14:
             return op1 ^ immediate;
         case 32:
@@ -254,15 +327,16 @@ int computeImmValue ( int op1 , int op2 , int PC )
     }
 }
 
-int IInstruction:execute ( int stage , int op1 , int op2 , int PC )
+int IInstruction::execute ( int stage , int op1 , int op2 , int PC )
 {
     if ( ! lastStage(stage) )
         return -1;
     else
-        computeImmValue ( op1 , op2 , PC );
+        computeValue ( op1 , op2 , PC );
 }
 
-void commit()
+// TODO : In case of load and store , save the value in the appropriate memory location/register
+void IInstruction::commit( RegisterFile & intRegisterFile , int destination )
 {
     return;
 }
@@ -292,10 +366,10 @@ RInstruction::RInstruction ( int  ins ): Instruction ( ins )
 
 RInstruction::RInstruction()
 {
-    insSet.stage = 0;
+    stage = 0;
 }
 
-insInfo IDstage(int PC , RegisterFile & intRegisterFile )
+insInfo RInstruction::IDstage(int PC , RegisterFile & intRegisterFile )
 {
     insSet.branch = false;
     insSet.nextPC = PC + 1;
@@ -329,7 +403,7 @@ insInfo RInstruction::getDetails ()
     return insSet;
 }
 
-bool canExecute(int stage , funcUnit & FUnit)
+bool RInstruction::canExecute(int stage , funcUnit & FUnit)
 {
     if ( opcode == 32 || opcode == 33 || opcode == 34 || opcode == 35 )
     {
@@ -337,7 +411,7 @@ bool canExecute(int stage , funcUnit & FUnit)
         {
             if ( FUnit.add[i][stage-1] == 0 )
             {
-                FUnit[i][stage-1] = 1;
+                FUnit.add[i][stage-1] = 1;
                 return true;
             }
         }
@@ -347,9 +421,9 @@ bool canExecute(int stage , funcUnit & FUnit)
     {
         for ( int j = 0 ; j < BIT_ALU ; j++ )
         {
-            if ( FUnit.bit[i][stage-1] == 0 )
+            if ( FUnit.bitOp[j][stage-1] == 0 )
             {
-                FUnit[i][stage-1] = 1;
+                FUnit.bitOp[j][stage-1] = 1;
                 return true;
             }
         }
@@ -359,9 +433,9 @@ bool canExecute(int stage , funcUnit & FUnit)
     {
         for ( int j = 0; j < MUL_ALU ; j++ )
         {
-            if ( FUnit.mul[i][stage-1] == 0 )
+            if ( FUnit.mul[j][stage-1] == 0 )
             {
-                FUnit[i][stage-1] = 1;
+                FUnit.mul[j][stage-1] = 1;
                 return true;
             }
         }
@@ -371,9 +445,9 @@ bool canExecute(int stage , funcUnit & FUnit)
     {
         for ( int j = 0; j < DIV_ALU ; j++ )
         {
-            if ( FUnit.div[i][stage-1] == 0 )
+            if ( FUnit.div[j][stage-1] == 0 )
             {
-                FUnit.div[i][stage-1] = 1;
+                FUnit.div[j][stage-1] = 1;
                 return true;
             }
         }
@@ -415,7 +489,7 @@ bool RInstruction::lastStage ( int stage )
     }
 }
 
-int computeValue ( int op1 , int op2 )
+int RInstruction::computeValue ( int op1 , int op2 , int PC )
 {
     switch(func)
     {
@@ -474,17 +548,17 @@ int computeValue ( int op1 , int op2 )
     return -2;
 }
 
-int execute ( int stage , int op1 , int op2 )
+int RInstruction::execute ( int stage , int op1 , int op2 , int PC )
 {
     if ( ! lastStage ( stage ) )
         return 1;
     else
-        return computeValue ( op1 , op2 );
+        return computeValue ( op1 , op2 , PC );
 }
 
-void commit ( )
+void RInstruction::commit ( RegisterFile & intRegisterFile, int PC )
 {
-    return ;
+    // TODO : Commit the instruction
 }
 
 /* ---------------------- RInstruction class functions end ------------------------------------------------ */

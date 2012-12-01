@@ -16,13 +16,22 @@
  * =====================================================================================
  */
 
+#ifndef PROCESSOR_H
+#define PROCESSOR_H
+
 #include <string>
 #include <vector>
-#include "instructions.h"
+#include <stdlib.h>
+#include "registerFile.h"
 #include "rob.h"
+#include "reservationStation.h"
 #include "branch.h"
+#include "instructions.h"
+#include "storeBuffer.h"
+
 
 #define MAXINSTRUCTIONS 1000
+#define MEMORY_SIZE 1024
 
 typedef struct _newInstr
 {
@@ -30,24 +39,23 @@ typedef struct _newInstr
     int PC;
 }newInstr;
 
-
-
-// TODO : 
-//      1. Store buffer update ( Have to add memory i.e cache )
-//      2. Add Store buffer
 class Processor
 {
     public:
 
         RegisterFile intRegisterFile;
+        ReservationStation resStation;
         ROB reOrderBuffer;
         BTB btb;
         BranchPrediction branchPredictor;
         funcUnit FUdetails;
+        int memory[MEMORY_SIZE];
+        StoreBuffer storeBuffer;
 
-        double PC;
-        unsigned int jCount , iCount , rCount , sCount;
-        unsigned int registerDuringPipeline[NoOfRegisters];
+
+        int PC ;
+        int jCount , iCount , rCount , sCount;
+        int registerDuringPipeline[NoOfRegisters];
 
         // Instructions stored
         JInstruction jInstruction[MAXINSTRUCTIONS];
@@ -55,12 +63,16 @@ class Processor
         RInstruction rInstruction[MAXINSTRUCTIONS];
         Instruction * listInstructions[MAXINSTRUCTIONS];
 
-        unsigned int insCount , stalls , cycles;
+        int insCount , stalls , cycles;
 
-        unsigned int updatingRegisters[NoOfRegisters] , gotValueRegisters[NoOfRegisters];
+        int updatingRegisters[NoOfRegisters] , gotValueRegisters[NoOfRegisters];
  
-        void computeStuff ( int * currentExecution , int * completed , int * valid , int currentIndex , int oldest);
         void addInstruction ( std::string hexValue );
         void execute();
         void printDetails();
+
+        int decodeInstructions ( newInstr *listIns , int numberIns );
+        int getInstructions (int numIns , newInstr * listIns );
 };
+
+#endif

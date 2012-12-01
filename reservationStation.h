@@ -19,33 +19,36 @@
 #ifndef RESERVATIONSTATION_H
 #define RESERVATIONSTATION_H
 
-#include "rob.h"
-#include "instruction.h"
-
 #define SIZEOFSTATION 10
+
+class ROB;
+class Instruction;
+class RegisterFile;
 
 typedef struct _entry
 {
     bool busy;
     int dataTag;
     bool valid;
-    int datatag2;
+    int dataTag2;
     bool valid2;
     bool readyForDispatch;
     int robIndex;
     int destination;
     bool doesWrite;
+    bool branch;
+    int PC ;
 }insEntry;
 
 class ReservationStation
 {
     private:
         insEntry instructions[SIZEOFSTATION];        
-        static bool centralized = 1;
 
     public:
 
-        void fillReservationStation(int PC , Instruction *insList , ROB &reOrderBuffer );          // For every instruction added to the Reservation Station , add it to the ROB in Program order
+        ReservationStation();
+        void fillReservationStation(int PC , Instruction *ins , ROB &reOrderBuffer , RegisterFile & registerFile );          // For every instruction added to the Reservation Station , add it to the ROB in Program order
         void updateReservationStation(int Tag , int Value );
         int dispatchInstructions(ROB &reOrderBuffer );            // Set up the dispatched bit in the ROB for all instructions that can be dispatched
 

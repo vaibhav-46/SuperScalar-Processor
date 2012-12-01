@@ -20,21 +20,22 @@
 #define STOREBUFFER_H
 
 #include <vector>
+#include <stdlib.h>
 
-typedef struct _entry
+struct storeBufferEntry 
 {
     int address;
     float value;
-}storeBufferEntry;
+};
 
 class StoreBuffer
 {
-    vector<storeBufferEntry> finishedStores;
-    vector<storeBufferEntry> completedStores;
+    std::vector<storeBufferEntry> finishedStores;
+    std::vector<storeBufferEntry> completedStores;
 
     void addFinishedStore(int address, int value );
     void writeBack ( int address, float *memory );
     float loadForwardingValue ( int address );
     bool isValueUpdated ( int address );
-}
+};
 #endif

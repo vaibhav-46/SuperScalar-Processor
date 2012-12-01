@@ -17,14 +17,15 @@
  */
 
 
-#include "processor.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#include "processor.h"
 
 using namespace std;
 
+bool branchStall = false;
 
 unsigned int opOpcode = pow(2,26);
 int lastIns = 0;
@@ -93,30 +94,49 @@ void Processor::addInstruction ( string hexValue )
  *  Stages in the execution :
  *      
  *      1. Commit the last instruction in ROB ( Returns bool )
- *      2. Update Registers for the last round of instructions ( void )
- *      3. Update Reservation Station for the indices and new values received. ( void )
- *      4. Execute the instructions present in the FU. ( Returns the list of registers whose values have been changed )
+ *      2. Execute the instructions present in the FU. ( Returns the list of registers whose values have been changed )
  *      5. Dispatch the next set of instructions. ( List of all instructions that are currently in the FU )
  *      6. ID - Decode instructions and add them to reservation station. 
  *      7. IF - Fetch the next k instructions. ( New structure - list of instructions , whether in the BTB , PCvalue  )
 */
+// TODO : If branchSTall is found , then what to do
 void Processor::execute()
 {
-     int bool = reOrderBuffer.commit();
-     // TODO : Have to write the execute instructions. Still pending ( To be written in the end )
+    newInstr *insList = new newInstr[SIZEOFSTATION];
+    int index = 0;
+    bool commited;
+    int numberInsGot = 0, numberInsDecoded = 0;
+    int execute, numberInsDispatched = 0;
+    while ( ! ( (PC > sCount) && !commited && ( execute!=-1) && !(numberInsDecoded ) && !(numberInsGot) ) )
+    {
+        commited = reOrderBuffer.commitIns(intRegisterFile);
+        execute = reOrderBuffer.execute( resStation );
+        numberInsDispatched = resStation.dispatchInstructions ( reOrderBuffer );
+        numberInsDecoded = decodeInstructions ( insList , numberInsGot );
+        if ( index == 0 )
+            numberInsGot = getInstructions ( SIZEOFSTATION , insList );
+        else
+            numberInsGot = getInstructions ( numberInsDecoded , insList );
+        index++;
+    }
+        
 }
 
-// TODO : In case of branch instruction with no return address, stall all further instructions till the return address is got and add appropriate register values for the later on instructions to get values.
-// TODO : For each instruction , add to the Reservation Station ( not all at once )
 int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
 {
     int i = 0;
     int flag = 0;
     for ( i = 0 ; i < numberIns ; i++ )
     {
-        insInfo returnVal= listIns[i].ins->IDstage();      
+        insInfo returnVal= listIns[i].ins->getDetails();      
         if ( returnVal.branch )
         {
+            resStation.fillReservationStation ( listIns[i].PC , listIns[i].ins , reOrderBuffer , intRegisterFile );
+            if ( returnVal.nextPC == -1769 )
+            {
+                branchStall = true;
+                return i+1;
+            }
             if ( i == numberIns - 1 )
             {
                 if ( PC != returnVal.nextPC )
@@ -136,23 +156,27 @@ int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
                 }
             }
         }
+        else
+            resStation.fillReservationStation( listIns[i].PC , listIns[i].ins , reOrderBuffer , intRegisterFile );
     }
     if ( flag )
     {
-        listIns[i+1] = NULL;
+        listIns[i+1].ins = '\0';
         return i+1;
     }
     else
     {
-        listIns[i] = NULL;
+        listIns[i].ins = '\0';
         return i;
     }
 }
 
+// Gets the required number of instructions that can be fit into the reservation station ( which is an argument -> numberIns )
 int Processor::getInstructions ( int numberIns , newInstr * listIns )
 {
     cout << "Getting Instructions : " << numberIns << endl;
-    for ( int i = 0 ; i < numberIns ; i++ )
+    int i;
+    for ( i = 0 ; i < numberIns ; i++ )
     {
         if ( PC == sCount )
             return i+1;
@@ -185,7 +209,7 @@ void Processor::printDetails ()
     double temp = (double)cycles / (double)insCount;
     cout << " Cycles per instruction      : " << temp << endl;
     cout << "====================================================================="<<endl;
-    registerFile.printContents();
+    intRegisterFile.printContents();
 }
 
 /*  

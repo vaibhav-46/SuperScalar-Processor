@@ -21,6 +21,7 @@
 #include <iostream>
 #include <stdlib.h>
 using namespace std;
+
 /*  @Main : Function to read file, add instructions to the instruction cache. Assuming that the hit rate is 100%, 
  *          all the instructions are read into memory and then process execution begins.
  * 

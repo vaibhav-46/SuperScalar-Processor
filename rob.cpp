@@ -16,14 +16,19 @@
  * =====================================================================================
  */
 
+#include <iostream>
+#include "rob.h"
+#include "instructions.h"
+#include "registerFile.h"
+using namespace std;
 ROB::ROB()
 {
     int index = 0;
 }
 
-int addInsRob( Instruction *p )
+int ROB::addInsRob( Instruction *p )
 {
-    insDetails *newInsEntry = (insDetails *)new (sizeof(insDetails));
+    insDetails *newInsEntry = new insDetails;
     newInsEntry->busy = 1;
     newInsEntry->valid = 0;
     newInsEntry->issued = 0;
@@ -32,15 +37,15 @@ int addInsRob( Instruction *p )
     return robEntries.size()-1;
 }
 
-// TODO HACK : Returns the next PC value in case of a branch instruction ( if branch is not yet found, return -1 )  [ Figure out a way to determine if the branch has been executed and returns the PC value and only return that . Else return -1 )
-int execute ( ReservationStation &station )
+// HACK : Returns the next PC value in case of a branch instruction ( if branch is not yet found, return -1 )  
+int ROB::execute ( ReservationStation &station )
 {
-    vector<int>::iterator start , end;
+    vector<insDetails>::iterator start , end;
     start = robEntries.begin();
     end = robEntries.end();
-    returnVal = -1;
+    int returnVal = -1;
     funcUnit FUnit;
-
+    int final = 0;
     int index = -1;
     for ( start ; start != end ; start++ )
     {
@@ -54,10 +59,10 @@ int execute ( ReservationStation &station )
             index++;
             if ( start->issued && ! start->valid )
             {
-                if ( ins->canExecute ( stage , FUnit) )
+                if ( start->ins->canExecute ( start->stage , FUnit) )
                 {
-                    final = ins->execute(stage , op1 , op2 );
-                    if ( ins->lastStage ( stage ) ) 
+                    final = start->ins->execute(start->stage , start->op1 , start->op2 , start->PC );
+                    if ( start->ins->lastStage ( start->stage ) ) 
                     {
                         start->valid = 1;
                         station.updateReservationStation ( index , final );
@@ -65,7 +70,7 @@ int execute ( ReservationStation &station )
                             returnVal = final;
                     }
                     else
-                        stage++;
+                        start->stage++;
                 }
             }
         }
@@ -73,36 +78,30 @@ int execute ( ReservationStation &station )
     return returnVal;
 }
 
-bool commitIns( RegisterFile & intRegisterFile )
+bool ROB::commitIns( RegisterFile & intRegisterFile )
 {
-    if ( robEntries[0].busy )
+    if ( robEntries.size() > 0 )
     {
-        if ( robEntries[0].valid )
+        if ( robEntries[0].busy )
         {
-            if ( !isBranch )
+            if ( robEntries[0].valid )
             {
-                robEntries[0].ins->commit();
-                    if ( intRegisterFile.tag[destinationRegister] == 0 )
-                    {
-                        intRegisterFile.tag[destinationRegister] = -1;
-                        intRegisterFile.busy[destinationRegister] = 0;
-                        intRegisterFile.registers[destinationRegister] = (int)final;
-                    }
+                robEntries[0].ins->commit( intRegisterFile , robEntries[0].destinationRegister );
+                robEntries.erase( robEntries.begin() );
+                intRegisterFile.updateRegisterTags();
+                return 1;
             }
-            intRegisterFile.updateRegisterTags();
-            // TODO : Remove the zeroth element of the vector
-            return 1;
         }
     }
     return 0;
 }
 
-void updateData ( int index , float operand1 , float operand2 , bool doesWrite , int destination, bool isInsBranch )
+void ROB::updateData ( int index , int operand1 , int operand2 , bool doesWrite , int destination, bool isInsBranch , int PC )
 {
     robEntries[index].op1 = operand1;
-    robEnries[index].op2 = operand2;
+    robEntries[index].op2 = operand2;
     robEntries[index].issued = 1;
-    robEntries[index].branch = !doesWrite;
     robEntries[index].destinationRegister = destination;
     robEntries[index].isBranch = isInsBranch;
+    robEntries[index].PC = PC ;
 }

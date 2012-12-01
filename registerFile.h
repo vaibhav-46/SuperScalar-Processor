@@ -20,28 +20,28 @@
 #define REGISTERFILE_H
 
 #define NoOfRegisters 32
+#define READPORTS 2
+#define WRITEPORTS 1
 
-template <typename T>
 class RegisterFile
 {
     private:
-        // Signed int / float registers for storing both positive and negative numbers
-        T registers[NoOfRegisters];        
+        int registers[NoOfRegisters];        
         bool busy[NoOfRegisters];
         int tag[NoOfRegisters];
 
-        bool readPorts[READPORTS], writePorts[WRITEPORTS];
+        bool readPort[READPORTS], writePort[WRITEPORTS];
 
     public:
         RegisterFile();
 
-        bool noPortsWritable();
-        bool int noPortsReadable();
+        int noPortsWritable();
+        int noPortsReadable();
         void setReadPortsValue( int number , int SetorUnset );
         void setWritePortsValue( int number , int SetorUnset );
 
-        int renameTag ( int index , int ROBindex );
-        void updateRegisters ( int regTag );
+        int renameVariable ( int index , int ROBindex );
+        void updateRegisters ( int regTag , int value );
 //
         bool isValid ( int regTag );
         int getValue ( int regTag );

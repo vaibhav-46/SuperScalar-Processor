@@ -33,13 +33,13 @@ typedef struct _BTBentry
 class BTB
 {
     private:
-        BTBentry entries[BTBsize];
+        BTBentry entries[BTBSIZE];
 
     public:
         BTB();
         int getBranchAddress ( int PC );
         void addBranchAddress ( int PC , int branchAddress );
-}
+};
 
 class BranchPrediction
 {
@@ -51,6 +51,6 @@ class BranchPrediction
         BranchPrediction();
         bool predictBranch ( int PC );
         void setBranchResult ( int PC );
-}
+};
 
 #endif

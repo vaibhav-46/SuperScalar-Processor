@@ -28,6 +28,16 @@
 #define ADD_LATENCY 1
 #define BIT_LATENCY 1
 
+class RegisterFile;
+
+typedef struct _funcUnit
+{
+    bool execute;
+    bool mul[MUL_ALU][MUL_LATENCY];
+    bool div[DIV_ALU][DIV_LATENCY];
+    bool add[ADD_ALU][ADD_LATENCY];
+    bool bitOp[BIT_ALU][BIT_LATENCY];
+}funcUnit;
 
 typedef struct _insInfo
 {
@@ -38,7 +48,7 @@ typedef struct _insInfo
     int destination;
     bool op1tag;
     bool op2tag;
-    bool doesWrite
+    bool doesWrite;
 }insInfo;
 
 class Instruction
@@ -50,45 +60,49 @@ class Instruction
 
         Instruction (  int ins );
         Instruction ();
-        insInfo IDstage(int PC);
-        int execute ( int stage , int op1 , int op2 )
-        void commit();
-        int canExecute (funcUnit & FUnit);          // Arguments to be given to this
+        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        int execute ( int stage , int op1 , int op2 , int PC );
+        void commit( RegisterFile & intRegisterFile , int destination);
+        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
+        int computeValue ( int op1 , int op2 , int PC );
 };
 
 class JInstruction : public Instruction
 {
     public:
         insInfo insSet;
+        int opcode , offset;
         int stage;
 
         JInstruction (  int ins );
         JInstruction ();
-        insInfo IDstage();
-        int execute ( int stage , int op1 , int op2 )
-        void commit();
-        int canExecute ();          // Arguments to be given to this
+        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        int execute ( int stage , int op1 , int op2 , int PC );
+        void commit( RegisterFile & intRegisterFile , int destination);
+        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
+        int computeValue ( int op1 , int op2 , int PC );
 };
 
 class RInstruction : public Instruction
 {
     public:
-        int opcode , source , second , destination, shamt , function;
+        int opcode , source , second , destination, shamt , func;
         insInfo insSet;
         int stage;
 
         RInstruction (  int ins );
         RInstruction ();
-        insInfo IDstage();
-        int execute ( int stage , int op1 , int op2 )
-        void commit();
-        int canExecute ();          // Arguments to be given to this
+        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        int execute ( int stage , int op1 , int op2 , int PC );
+        void commit( RegisterFile & intRegisterFile , int destination);
+        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
+        int computeValue ( int op1 , int op2 , int PC );
 };
 
 class IInstruction : public Instruction
@@ -100,12 +114,13 @@ class IInstruction : public Instruction
 
         IInstruction (  int ins );
         IInstruction ();
-        insInfo IDstage();
-        int execute ( int stage , int op1 , int op2 )
-        void commit();
-        int canExecute ();          // Arguments to be given to this
+        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        int execute ( int stage , int op1 , int op2 , int PC );
+        void commit( RegisterFile & intRegisterFile , int destination);
+        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
         bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
         insInfo getDetails();
+        int computeValue ( int op1 , int op2 , int PC );
 };
 
 #endif

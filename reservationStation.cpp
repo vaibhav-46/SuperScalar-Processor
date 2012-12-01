@@ -16,7 +16,23 @@
  * =====================================================================================
  */
 
-void fillReservationStation ( int PC , Instruction *insList , ROB &reOrderBuffer , int count )
+#include <iostream>
+#include "reservationStation.h"
+#include "instructions.h"
+#include "registerFile.h"
+#include "rob.h"
+using namespace std;
+
+ReservationStation::ReservationStation()
+{
+    for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
+    {
+        instructions[i].busy = 0;
+        instructions[i].readyForDispatch = 0;
+    }
+}
+// Adds the instruction to the reservation station . Fills in all the appropriate values
+void ReservationStation::fillReservationStation ( int PC , Instruction *ins , ROB &reOrderBuffer  , RegisterFile & intRegiserFile )
 {
     int j = 0;
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
@@ -26,32 +42,33 @@ void fillReservationStation ( int PC , Instruction *insList , ROB &reOrderBuffer
         else
         {
             instructions[i].busy = 1;
-            insInfo insDetails = insList[j]->getDetails();       // A new structure 
-            // TODO : Fill in the rest of the values using the structure
+            insInfo insDetails = ins->getDetails();       // A new structure 
             instructions[i].dataTag = insDetails.op1;
             instructions[i].dataTag2 = insDetails.op2;
             instructions[i].valid = insDetails.op1tag;
             instructions[i].valid2 = insDetails.op2tag;
+            instructions[i].PC = PC;
 
             if ( instructions[i].valid && instructions[i].valid2 )
                 instructions[i].readyForDispatch = true;
             else
                 instructions[i].readyForDispatch = false;
 
-            int renameIndex = reOrderBuffer.addInsRob ( insList[j] );
+            int renameIndex = reOrderBuffer.addInsRob ( ins );
             instructions[i].robIndex = renameIndex;
-            instructions[i].destination = insDetails.destination;
             instructions[i].doesWrite = insDetails.doesWrite;
-            // TODO : Rename the output register of the command 
-
-            j++;
-            if ( j == count )
-                break;
+            instructions[i].branch = insDetails.branch;
+            // Register Renaming in case the instruction is a write instruction
+            int index;
+            if ( insDetails.doesWrite )
+                index = intRegiserFile.renameVariable ( insDetails.destination , renameIndex );
+            instructions[i].destination = index;
+            break;
         }
     }
 }
 
-void updateReservationStation(int index , int value )
+void ReservationStation::updateReservationStation(int index , int value )
 {
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
@@ -76,14 +93,14 @@ void updateReservationStation(int index , int value )
     }
 }
 
-int dispatchInstructions ( ROB & reOrderBuffer )
+int ReservationStation::dispatchInstructions ( ROB & reOrderBuffer )
 {
     int count = 0;
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
         if ( instructions[i].readyForDispatch )
         {
-            reOrderBuffer.updateData ( instructions[i].robIndex , instructions[i].dataTag , instructions[i].dataTag2 , instructions[i].doesWrite , instructions[i].destination );
+            reOrderBuffer.updateData ( instructions[i].robIndex , instructions[i].dataTag , instructions[i].dataTag2 , instructions[i].doesWrite , instructions[i].destination , instructions[i].branch , instructions[i].PC);
             count++;
             instructions[i].busy = 0;
         }

@@ -17,8 +17,10 @@
  */
 
 #include <iostream>
+#include "registerFile.h"
+using namespace std;
 
-RegisterFile RegisterFile()
+RegisterFile::RegisterFile()
 {
     int i = 0;
     for ( i = 0; i < NoOfRegisters ; i++ )
@@ -112,14 +114,14 @@ void RegisterFile::printContents()
     }
 }
 
-int renameVariable ( int index , int ROBindex )
+int RegisterFile::renameVariable ( int index , int ROBindex )
 {
     busy[index] = 1;
     tag[index] = ROBindex;
 }
 
 
-void updateRegisters ( int index , T value )
+void RegisterFile::updateRegisters ( int index , int value )
 {
     int i;
     for ( i = 0; i < NoOfRegisters ; i++ )
@@ -134,16 +136,16 @@ void updateRegisters ( int index , T value )
     tag[i] = -1;
 }
 
-void updateRegisterTags ()
+void RegisterFile::updateRegisterTags ()
 {
     for ( int i = 0 ; i < NoOfRegisters; i++ )
     {
-        if ( tags[i] >= 0 )
-            tags[i]--;
+        if ( tag[i] >= 0 )
+            tag[i]--;
     }
 }
 
-bool isValid ( int regTag )
+bool RegisterFile::isValid ( int regTag )
 {
     if ( busy[regTag] )
         return false;
@@ -151,12 +153,12 @@ bool isValid ( int regTag )
         return true;
 }
 
-int getValue ( int regTag )
+int RegisterFile::getValue ( int regTag )
 {
     return registers[regTag];
 }
 
-int getTag ( int regTag )
+int RegisterFile::getTag ( int regTag )
 {
     return tag[regTag];
 }

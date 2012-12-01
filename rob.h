@@ -23,7 +23,7 @@
 
 #include <vector>
 #include "instructions.h"
-#include "registerFile.h"
+#include "reservationStation.h"
 
 #define ROBSIZE 100
 #define ADD_ALU 2
@@ -35,43 +35,36 @@
 #define ADD_LATENCY 1
 #define BIT_LATENCY 1
 
-typedef struct _funcUnit
-{
-    bool execute;
-    bool mul[MUL_ALU][MUL_LATENCY];
-    bool div[DIV_ALU][DIV_LATENCY];
-    bool add[ADD_ALU][ADD_LATENCY];
-    bool bitOp[BIT_ALU][BIT_LATENCY];
-}funcUnit;
+class RegisterFile;
 
-
-typedef struct _robentry
+typedef struct insDetails
 {
     bool busy;
     bool issued;
     int destinationRegister;
     bool valid;
-    int stage
+    int stage;
     bool intResult;
-    float final;
+    int final;
     Instruction *ins;
-    float op1 , op2;
+    int op1 , op2;
     bool isBranch;
+    int PC;
 }insDetails;
 
 class ROB
 {
     private:
-        vector<insDetails> robEntries;
+        std::vector<insDetails> robEntries;
         int index;
 
     public:
         ROB();
 
         int addInsRob(Instruction *p );
-        void execute(reservationStation &);
-        void updateOperands ( int , float , float );
-        void commitIns(RegisterFile & intRegFile );
+        int execute(ReservationStation &r);
+        void updateData ( int , int , int, bool ,int , bool , int );
+        bool commitIns(RegisterFile & intRegFile );
 };
 
 #endif
