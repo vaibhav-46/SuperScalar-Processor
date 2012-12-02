@@ -60,9 +60,15 @@ void ReservationStation::fillReservationStation ( int PC , Instruction *ins , RO
             instructions[i].doesWrite = insDetails.doesWrite;
             instructions[i].branch = insDetails.branch;
             // Register Renaming in case the instruction is a write instruction
-            int index;
+            int index = 0;
+            cout << "Instruction added to RS : " << PC;
             if ( insDetails.doesWrite )
+            {
                 index = intRegiserFile.renameVariable ( insDetails.destination , renameIndex );
+                cout << "\t " << index << endl;
+            }
+            else
+                cout << endl;
             instructions[i].destination = index;
             break;
         }
@@ -71,12 +77,16 @@ void ReservationStation::fillReservationStation ( int PC , Instruction *ins , RO
 
 void ReservationStation::updateReservationStation(int index , int value )
 {
+    cout << "Reservation Station being updated by the index :  "  << index << "  ";
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
+        if ( instructions[i].busy )
+        {
         if ( ! instructions[i].valid )
         {
             if ( instructions[i].dataTag == index )
             {
+                cout << instructions[i].PC << "   ";
                 instructions[i].dataTag = value;
                 instructions[i].valid = 1;
             }
@@ -85,6 +95,7 @@ void ReservationStation::updateReservationStation(int index , int value )
         {
             if ( instructions[i].dataTag2 == index )
             {
+                cout << instructions[i].PC << "   ";
                 instructions[i].dataTag2 = value;
                 instructions[i].valid2 = 1;
             }
@@ -92,6 +103,8 @@ void ReservationStation::updateReservationStation(int index , int value )
         if ( instructions[i].valid && instructions[i].valid2 )
             instructions[i].readyForDispatch = true;
     }
+    }
+    cout << endl;
 }
 
 int ReservationStation::dispatchInstructions ( ROB & reOrderBuffer )
@@ -99,12 +112,40 @@ int ReservationStation::dispatchInstructions ( ROB & reOrderBuffer )
     int count = 0;
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
-        if ( instructions[i].readyForDispatch )
+        if ( instructions[i].readyForDispatch && instructions[i].busy )
         {
+            //cout << "Dispatched instruction : " << instructions[i].PC << endl;
             reOrderBuffer.updateData ( instructions[i].robIndex , instructions[i].dataTag , instructions[i].dataTag2 , instructions[i].doesWrite , instructions[i].destination , instructions[i].branch , instructions[i].PC);
             count++;
             instructions[i].busy = 0;
         }
+    }
+    return count;
+}
+
+void ReservationStation::updateIndex ()
+{
+    for ( int i = 0 ; i < SIZEOFSTATION ; i++)
+    {
+        if ( instructions[i].busy )
+        {
+            instructions[i].robIndex--;
+            instructions[i].destination--;
+            if ( !instructions[i].valid )
+                instructions[i].dataTag--;
+            if ( !instructions[i].valid2 )
+                instructions[i].dataTag2--;
+        }   
+    }
+}
+
+int ReservationStation::emptySpace()
+{
+    int count = 0;
+    for ( int i = 0; i < SIZEOFSTATION ; i++ )
+    {
+       if ( !instructions[i].busy )
+            count++;
     }
     return count;
 }

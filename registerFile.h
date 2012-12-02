@@ -23,6 +23,8 @@
 #define READPORTS 2
 #define WRITEPORTS 1
 
+class ROB;
+
 class RegisterFile
 {
     private:
@@ -43,8 +45,8 @@ class RegisterFile
         int renameVariable ( int index , int ROBindex );
         void updateRegisters ( int regTag , int value );
 //
-        bool isValid ( int regTag );
-        int getValue ( int regTag );
+        bool isValid ( int regTag , ROB & rob);
+        int getValue ( int regTag , ROB & rob);
         int getTag ( int regTag );
 //
         void printContents();

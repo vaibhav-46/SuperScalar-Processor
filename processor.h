@@ -65,6 +65,7 @@ class Processor
 
         int insCount , stalls , cycles;
 
+        Processor();
         int updatingRegisters[NoOfRegisters] , gotValueRegisters[NoOfRegisters];
  
         void addInstruction ( std::string hexValue );

@@ -37,7 +37,7 @@ Instruction::Instruction (  )
     instruction = -1;
 }
 
-insInfo Instruction::IDstage(int PC , RegisterFile & intRegisterFile )
+insInfo Instruction::IDstage(int PC , RegisterFile & intRegisterFile , ROB & rob )
 {
     insInfo object;
     object.branch = false;
@@ -105,19 +105,23 @@ JInstruction::JInstruction ()
     value = 0;
 }
 
-insInfo JInstruction::IDstage( int PC , RegisterFile & intRegisterFile )
+insInfo JInstruction::IDstage( int PC , RegisterFile & intRegisterFile , ROB & rob )
 {
     insSet.branch = true;
     if ( opcode == 2 )
     {
         insSet.doesWrite = false;
-        insSet.nextPC = PC + offset;
+        insSet.nextPC = offset;
+        insSet.op1tag = true;
+        insSet.op2tag = true;
         return insSet;
     }
     else if ( opcode == 3 )
     {
         insSet.doesWrite = true;
-        insSet.nextPC = PC + offset;
+        insSet.nextPC = offset;
+        insSet.op1tag = true;
+        insSet.op2tag = true;
         return insSet;
     }
     else
@@ -130,7 +134,7 @@ void JInstruction::commit( RegisterFile & intRegisterFile , int destination , St
         return;
     else
     {
-        intRegisterFile.updateRegisters ( destination , offset );
+        intRegisterFile.updateRegisters ( 31 , offset );
         return;
     }
 }
@@ -184,32 +188,32 @@ IInstruction::IInstruction()
     value = 0;
 }
 
-insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
+insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile  , ROB & rob )
 {
     if ( opcode < 8 )
     {
         insSet.branch = true;
-        if ( intRegisterFile.isValid(source) && intRegisterFile.isValid(second) )
+        if ( intRegisterFile.isValid(source , rob) && intRegisterFile.isValid(second , rob) )
         {
             switch(opcode)
             {
                 case 4:
-                    if ( intRegisterFile.getValue(source) == intRegisterFile.getValue(second) )
+                    if ( intRegisterFile.getValue(source, rob) == intRegisterFile.getValue(second, rob) )
                         insSet.nextPC = PC+immediate;
                     else
                         insSet.nextPC = PC+1;
                 case 5:
-                        if ( intRegisterFile.getValue(source) != intRegisterFile.getValue(second) )
+                        if ( intRegisterFile.getValue(source, rob) != intRegisterFile.getValue(second, rob) )
                             insSet.nextPC = PC+immediate;
                         else
                             insSet.nextPC = PC+1;
                 case 6:
-                        if ( intRegisterFile.getValue(source) <= 0 )
+                        if ( intRegisterFile.getValue(source, rob) <= 0 )
                             insSet.nextPC = PC+immediate;
                         else
                             insSet.nextPC = PC+1;
                 case 7:
-                        if ( intRegisterFile.getValue(source) >= 0 )
+                        if ( intRegisterFile.getValue(source, rob) >= 0 )
                             insSet.nextPC = PC+immediate;
                         else
                             insSet.nextPC = PC+1;
@@ -219,10 +223,28 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
         {
             addFlag = false;
             insSet.nextPC = -1769;
-            insSet.op1 = intRegisterFile.getTag(source);
-            insSet.op2 = intRegisterFile.getTag(second);
-            insSet.op1tag = false;
-            insSet.op2tag = false;
+            if ( intRegisterFile.isValid(source , rob) )
+            {
+                insSet.op1 = intRegisterFile.getValue(source, rob);
+                insSet.op2 = intRegisterFile.getTag(second);
+                insSet.op1tag = true;
+                insSet.op2tag = false;
+            }
+            else
+            {
+                insSet.op1 = intRegisterFile.getTag(source);
+                insSet.op1tag = false;
+                if ( intRegisterFile.isValid ( second  , rob) )
+                {
+                    insSet.op2 = intRegisterFile.getValue ( second , rob);
+                    insSet.op2tag = true;
+                }
+                else
+                {
+                    insSet.op2 = intRegisterFile.getTag(second);
+                    insSet.op2tag = false;
+                }
+            }
             insSet.doesWrite = false; 
             insSet.destination = -1;
         }
@@ -232,9 +254,9 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
        insSet.branch = false; 
        insSet.doesWrite = true;
        insSet.destination = second;
-       if ( intRegisterFile.isValid ( source ) )
+       if ( intRegisterFile.isValid ( source  , rob) )
        {
-           insSet.op1 = intRegisterFile.getValue(source);
+           insSet.op1 = intRegisterFile.getValue(source, rob);
            insSet.op1tag = true;
        }
        else
@@ -242,9 +264,9 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
            insSet.op1 = intRegisterFile.getTag ( source );
            insSet.op1tag = false;
        }
-       if ( intRegisterFile.isValid ( second ) )
+       if ( intRegisterFile.isValid ( second  , rob) )
        {
-           insSet.op2 = intRegisterFile.getValue ( second );
+           insSet.op2 = intRegisterFile.getValue ( second , rob);
            insSet.op2tag = true;
        }
        else
@@ -258,9 +280,9 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
     {
         insSet.branch = false;
         insSet.doesWrite = true;
-        if ( intRegisterFile.isValid( source ) )
+        if ( intRegisterFile.isValid( source  , rob) )
         {
-            insSet.op1 = intRegisterFile.getValue ( source );
+            insSet.op1 = intRegisterFile.getValue ( source , rob);
             insSet.op1tag = true;
         }
         else
@@ -268,15 +290,17 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
             insSet.op1 = intRegisterFile.getTag ( source );
             insSet.op1tag = false;
         }
+        insSet.op2 = 0;
+        insSet.op2tag = true;
         insSet.destination = second;
     }
     else
     {
         insSet.branch = false;
         insSet.doesWrite = false;
-        if ( intRegisterFile.isValid( source ) )
+        if ( intRegisterFile.isValid( source  , rob) )
         {
-            insSet.op1 = intRegisterFile.getValue ( source );
+            insSet.op1 = intRegisterFile.getValue ( source , rob);
             insSet.op1tag = true;
         }
         else
@@ -284,9 +308,9 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
             insSet.op1 = intRegisterFile.getTag ( source );
             insSet.op1tag = false;
         }
-        if ( intRegisterFile.isValid( second ) )
+        if ( intRegisterFile.isValid( second  , rob) )
         {
-            insSet.op2 = intRegisterFile.getValue ( second );
+            insSet.op2 = intRegisterFile.getValue ( second , rob);
             insSet.op2tag = true;
         }
         else
@@ -385,26 +409,26 @@ int IInstruction::computeValue ( int op1 , int op2 , int PC )
     {
         case 4:
             if ( op1 == op2 )
-                return PC + immediate;
+                return immediate;
             else
                 return PC+1;
         case 5:
             if ( op1 != op2 )
-                return PC+immediate;
+                return immediate;
             else
                 return PC+1;
         case 6:
             if ( op1 < 0 )
-                return PC+immediate;
+                return immediate;
             else
                 return PC+1;
         case 7:
             if ( op1 > 0 )
                 return PC+1;
         case 8:
-            return op1+op2;
+            return op1+immediate;
         case 9:
-            return op1+op2;
+            return op1+immediate;
         case 10:
             return op1 < op2;
         case 11:
@@ -454,6 +478,8 @@ int IInstruction::execute ( int stage , int op1 , int op2 , int PC )
 
 void IInstruction::commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory )
 {
+    if ( opcode < 8 )
+        return;
     if ( opcode < 32 )
         intRegisterFile.updateRegisters ( destination , value );
     else if ( opcode == 32 )
@@ -464,7 +490,7 @@ void IInstruction::commit( RegisterFile & intRegisterFile , int destination , St
         }
         else
         {
-            intRegisterFile.updateRegisters ( destination , memory[value] );
+            intRegisterFile.updateRegisters ( destination , memory[value/4] );
         }
     }
     else if ( opcode == 34 )
@@ -480,7 +506,7 @@ void IInstruction::commit( RegisterFile & intRegisterFile , int destination , St
         intRegisterFile.updateRegisters ( destination , temp );
     }
     else if ( opcode == 40 )
-        storeBuffer.addFinishedStore ( value , tempStore );
+        storeBuffer.addFinishedStore ( value/4 , tempStore );
     else if ( opcode == 42 )
     {
         for ( int i = 0 ; i < 4 ; i++ )
@@ -516,23 +542,31 @@ RInstruction::RInstruction()
     value = 0;
 }
 
-insInfo RInstruction::IDstage(int PC , RegisterFile & intRegisterFile )
+insInfo RInstruction::IDstage(int PC , RegisterFile & intRegisterFile , ROB & rob )
 {
     insSet.branch = false;
     insSet.nextPC = PC + 1;
-    if ( intRegisterFile.isValid( source ) )
+    if ( func == 0 || func == 2 )
     {
-        insSet.op1 = intRegisterFile.getValue ( source );
+        insSet.op1 = -1;
         insSet.op1tag = true;
     }
     else
     {
-        insSet.op1tag = false;
-        insSet.op1 = intRegisterFile.getTag ( source );
+        if ( intRegisterFile.isValid( source  , rob) )
+        {
+            insSet.op1 = intRegisterFile.getValue ( source , rob);
+            insSet.op1tag = true;
+        }
+        else
+        {
+            insSet.op1tag = false;
+            insSet.op1 = intRegisterFile.getTag ( source );
+        }
     }
-    if ( intRegisterFile.isValid( second ) )
+   if ( intRegisterFile.isValid( second  , rob) )
     {
-        insSet.op2 = intRegisterFile.getValue ( second );
+        insSet.op2 = intRegisterFile.getValue ( second , rob);
         insSet.op2tag = true;
     }
     else
@@ -552,7 +586,7 @@ insInfo RInstruction::getDetails ()
 
 bool RInstruction::canExecute(int stage , funcUnit & FUnit)
 {
-    if ( opcode == 32 || opcode == 33 || opcode == 34 || opcode == 35 )
+    if ( func == 32 || func == 33 || func == 34 || func == 35 )
     {
         for ( int i = 0; i < ADD_ALU ; i++ )
         {
@@ -564,7 +598,7 @@ bool RInstruction::canExecute(int stage , funcUnit & FUnit)
         }
         return false;
     }
-    else if ( opcode > 35 || opcode < 8  )
+    else if ( func > 35 || func < 8  )
     {
         for ( int j = 0 ; j < BIT_ALU ; j++ )
         {
@@ -576,7 +610,7 @@ bool RInstruction::canExecute(int stage , funcUnit & FUnit)
         }
         return false;
     }
-    else if ( opcode > 15 && opcode < 26 ) 
+    else if ( func > 15 && func < 26 ) 
     {
         for ( int j = 0; j < MUL_ALU ; j++ )
         {
@@ -588,7 +622,7 @@ bool RInstruction::canExecute(int stage , funcUnit & FUnit)
         }
         return false;
     }
-    else if ( opcode == 26 || opcode == 27 )
+    else if ( func == 26 || func == 27 )
     {
         for ( int j = 0; j < DIV_ALU ; j++ )
         {
@@ -606,21 +640,21 @@ bool RInstruction::canExecute(int stage , funcUnit & FUnit)
 
 bool RInstruction::lastStage ( int stage )
 {
-    if ( opcode < 8 || opcode > 35 )
+    if ( func < 8 || func > 35 )
     {
         if ( stage == BIT_LATENCY )
             return true;
         else
             return false;
     }
-    else if ( opcode > 32 )
+    else if ( func >= 32 )
     {
         if ( stage == ADD_LATENCY )
             return true;
         else
             return false;
     }
-    else if ( opcode == 26 || opcode == 27 )
+    else if ( func == 26 || func == 27 )
     {
         if ( stage == DIV_LATENCY )
             return true;

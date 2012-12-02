@@ -30,6 +30,7 @@
 
 class RegisterFile;
 class StoreBuffer;
+class ROB;
 
 typedef struct _funcUnit
 {
@@ -61,7 +62,7 @@ class Instruction
 
         Instruction (  unsigned int ins );
         Instruction ();
-        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile, ROB & rob);
         virtual int execute ( int stage , int op1 , int op2 , int PC );
         virtual void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer &storeBuffer , int * memory );
         virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
@@ -81,7 +82,7 @@ class JInstruction : public Instruction
 
         JInstruction (  unsigned int ins );
         JInstruction ();
-        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile, ROB & rob);
         virtual int execute ( int stage , int op1 , int op2 , int PC );
         virtual void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
         virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
@@ -100,7 +101,7 @@ class RInstruction : public Instruction
 
         RInstruction (  unsigned int ins );
         RInstruction ();
-        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile, ROB & rob );
         virtual int execute ( int stage , int op1 , int op2 , int PC );
         virtual void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
         virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
@@ -121,7 +122,7 @@ class IInstruction : public Instruction
 
         IInstruction (  unsigned int ins );
         IInstruction ();
-        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile, ROB & rob );
         virtual int execute ( int stage , int op1 , int op2 , int PC );
         virtual void commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory );
         virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this

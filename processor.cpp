@@ -44,6 +44,18 @@ char getType ( unsigned int ins )
 }
 // --------------------------- Processor Class Begins ----------------------------------
 
+Processor::Processor()
+{
+    // Update which ever memory location is necessary 
+    memory[0] = 1;
+    memory[1] = 0;
+    memory[2] = 0;
+    memory[3] = 1;
+    memory[4] = 1;
+    memory[5] = 2;
+    memory[6] = 3;
+    memory[7] = 4;
+}
 void Processor::addInstruction ( string hexValue )
 {
     unsigned int ins;
@@ -103,32 +115,33 @@ void Processor::execute()
 {
     newInstr *insList = new newInstr[SIZEOFSTATION];
     int index = 0;
+    int wastage = 0;
     bool commited;
     int numberInsGot = 0, numberInsDecoded = 0;
     int execute, numberInsDispatched = 0;
-    cout << " Ready to execute !! " << endl;
-    while ( ! ( (PC > sCount) && !commited && ( execute!=-1) && !(numberInsDecoded ) && !(numberInsGot) ) )
+    cout << " Ready to execute !! Ins count : " << sCount << endl;
+    while ( ! ( (PC >= sCount) && !commited && !(numberInsDecoded ) && !(numberInsGot) ) )
     {
-        commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory );
+        commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory , resStation );
         execute = reOrderBuffer.execute( resStation );
         numberInsDispatched = resStation.dispatchInstructions ( reOrderBuffer );
+       numberInsDispatched = resStation.emptySpace(); 
+        if ( index == 0 )
+            numberInsGot = getInstructions ( SIZEOFSTATION , insList );
+        else
+            numberInsGot = getInstructions ( numberInsDispatched , insList );
         numberInsDecoded = decodeInstructions ( insList , numberInsGot );
         while ( branchStall )
         {
-            commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory );
+            commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory , resStation );
             execute = reOrderBuffer.execute ( resStation );
-            numberInsDispatched = resStation.dispatchInstructions ( reOrderBuffer );
-            numberInsDecoded += numberInsDispatched;
+            numberInsDispatched += resStation.dispatchInstructions ( reOrderBuffer );
             if ( execute != -1 )
             {
                 PC = execute;
                 branchStall = false;
             }
         }
-        if ( index == 0 )
-            numberInsGot = getInstructions ( SIZEOFSTATION , insList );
-        else
-            numberInsGot = getInstructions ( numberInsDecoded , insList );
         index++;
     }
 }
@@ -139,7 +152,7 @@ int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
     int flag = 0;
     for ( i = 0 ; i < numberIns ; i++ )
     {
-        insInfo returnVal= listIns[i].ins->IDstage ( listIns[i].PC , intRegisterFile );      
+        insInfo returnVal= listIns[i].ins->IDstage ( listIns[i].PC , intRegisterFile , reOrderBuffer );
         if ( returnVal.branch )
         {
             resStation.fillReservationStation ( listIns[i].PC , listIns[i].ins , reOrderBuffer , intRegisterFile );
@@ -179,12 +192,11 @@ int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
 // Gets the required number of instructions that can be fit into the reservation station ( which is an argument -> numberIns )
 int Processor::getInstructions ( int numberIns , newInstr * listIns )
 {
-    cout << "Getting Instructions : " << numberIns << endl;
     int i;
     for ( i = 0 ; i < numberIns ; i++ )
     {
-        if ( PC == sCount )
-            return i+1;
+        if ( PC >= sCount )
+            break;
         else
         {
             listIns[i].ins = listInstructions[PC];
@@ -202,7 +214,9 @@ int Processor::getInstructions ( int numberIns , newInstr * listIns )
             }
         }
     }
-    return i+1;
+    if ( i != 0 )
+        cout << "Getting Instructions : " << i << endl;
+    return i;
 }
 
 void Processor::printDetails ()
@@ -241,3 +255,5 @@ void Processor::printDetails ()
     }
 
 */
+
+// TODO : Add the branch instructions to the BTB

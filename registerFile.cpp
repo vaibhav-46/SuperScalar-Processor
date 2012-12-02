@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include "registerFile.h"
+#include "rob.h"
 using namespace std;
 
 RegisterFile::RegisterFile()
@@ -30,10 +31,10 @@ RegisterFile::RegisterFile()
         tag[i] = -1;
     }
     // Update values of registers here
-    registers[4] = 0;
-    registers[5] = 25;
-    registers[6] = 50;
+    registers[0] = 0;
     registers[5] = 5;
+    registers[1] = 1;
+    registers[6] = 0;
 }
 
 int RegisterFile::noPortsWritable ()
@@ -136,7 +137,7 @@ void RegisterFile::updateRegisters ( int index , int value )
             break;
     }
     if ( i == NoOfRegisters )
-        cout << "Error : trying to write to unknown register!!" << endl;
+        return;
     registers[i] = value;
     busy[i] = 0;
     tag[i] = -1;
@@ -151,17 +152,25 @@ void RegisterFile::updateRegisterTags ()
     }
 }
 
-bool RegisterFile::isValid ( int regTag )
+bool RegisterFile::isValid ( int regTag , ROB & reOrderBuffer )
 {
     if ( busy[regTag] )
-        return false;
+    {
+        if ( reOrderBuffer.isValid ( tag[regTag] ) )
+            return true;
+        else
+            return false;
+    }
     else
         return true;
 }
 
-int RegisterFile::getValue ( int regTag )
+int RegisterFile::getValue ( int regTag , ROB & reOrderBuffer )
 {
-    return registers[regTag];
+    if ( busy[regTag] )
+        return reOrderBuffer.getValue ( regTag );
+    else
+        return registers[regTag];
 }
 
 int RegisterFile::getTag ( int regTag )

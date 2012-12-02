@@ -45,28 +45,28 @@ int ROB::execute ( ReservationStation &station )
     end = robEntries.end();
     int returnVal = -1;
     funcUnit FUnit;
-    int final = 0;
+    int i = 0;
     for ( start= robEntries.begin() ; start != end ; start++ )
     {
+        i++;
         if ( ! start->busy )
         {
-            index++;
             break;
         }
         else
         {
-            index++;
             if ( start->issued && ! start->valid )
             {
                 if ( start->ins->canExecute ( start->stage , FUnit) )
                 {
-                    final = start->ins->execute(start->stage , start->op1 , start->op2 , start->PC );
+                    cout << "Executing instruction : " << start->PC << " " << start->op1 << " " << start->op2 << endl;
+                    start->final = start->ins->execute(start->stage , start->op1 , start->op2 , start->PC );
                     if ( start->ins->lastStage ( start->stage ) ) 
                     {
                         start->valid = 1;
-                        station.updateReservationStation ( index , final );
+                        station.updateReservationStation ( start->destinationRegister , start->final );
                         if ( returnVal == -1 && start->isBranch )
-                            returnVal = final;
+                            returnVal = start->final;
                     }
                     else
                         start->stage++;
@@ -77,7 +77,7 @@ int ROB::execute ( ReservationStation &station )
     return returnVal;
 }
 
-bool ROB::commitIns( RegisterFile & intRegisterFile , StoreBuffer & storeBuffer , int * memory )
+bool ROB::commitIns( RegisterFile & intRegisterFile , StoreBuffer & storeBuffer , int * memory , ReservationStation & resStation )
 {
     if ( robEntries.size() > 0 )
     {
@@ -86,8 +86,12 @@ bool ROB::commitIns( RegisterFile & intRegisterFile , StoreBuffer & storeBuffer 
             if ( robEntries[0].valid )
             {
                 robEntries[0].ins->commit( intRegisterFile , robEntries[0].destinationRegister , storeBuffer , memory );
+                cout << "Commit instruction : " << robEntries[0].PC << "  " << endl;
+                for ( unsigned int i = 0; i < robEntries.size() ; i++ )
+                    robEntries[i].destinationRegister--;
                 robEntries.erase( robEntries.begin() );
                 intRegisterFile.updateRegisterTags();
+                resStation.updateIndex();
                 return 1;
             }
         }
@@ -103,4 +107,19 @@ void ROB::updateData ( int index , int operand1 , int operand2 , bool doesWrite 
     robEntries[index].destinationRegister = destination;
     robEntries[index].isBranch = isInsBranch;
     robEntries[index].PC = PC ;
+}
+
+bool ROB::isValid ( int regTag )
+{
+    for ( unsigned int i = 0 ; i < robEntries.size() ; i++ )
+    {
+        if ( robEntries[i].valid && robEntries[i].destinationRegister == regTag )
+            return 1;
+    }
+    return 0;
+}
+
+int ROB::getValue ( int regTag )
+{
+    return robEntries[regTag].final;
 }
