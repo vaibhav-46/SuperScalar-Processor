@@ -36,7 +36,6 @@ ReservationStation::ReservationStation()
 // Adds the instruction to the reservation station . Fills in all the appropriate values
 void ReservationStation::fillReservationStation ( int PC , Instruction *ins , ROB &reOrderBuffer  , RegisterFile & intRegiserFile )
 {
-    int j = 0;
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
         if ( instructions[i].busy )

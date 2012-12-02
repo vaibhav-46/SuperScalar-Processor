@@ -29,6 +29,11 @@ RegisterFile::RegisterFile()
         busy[i] = 0;
         tag[i] = -1;
     }
+    // Update values of registers here
+    registers[4] = 0;
+    registers[5] = 25;
+    registers[6] = 50;
+    registers[5] = 5;
 }
 
 int RegisterFile::noPortsWritable ()
@@ -118,6 +123,7 @@ int RegisterFile::renameVariable ( int index , int ROBindex )
 {
     busy[index] = 1;
     tag[index] = ROBindex;
+    return ROBindex;
 }
 
 

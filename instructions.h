@@ -55,19 +55,20 @@ typedef struct _insInfo
 class Instruction
 {
     public:
-        int instruction;
+        unsigned int instruction;
         insInfo insSet;
         int value;
 
-        Instruction (  int ins );
+        Instruction (  unsigned int ins );
         Instruction ();
-        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
-        int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer &storeBuffer , int * memory );
-        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
-        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
-        insInfo getDetails();
-        int computeValue ( int op1 , int op2 , int PC );
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual int execute ( int stage , int op1 , int op2 , int PC );
+        virtual void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer &storeBuffer , int * memory );
+        virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
+        virtual bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
+        virtual insInfo getDetails();
+        virtual int computeValue ( int op1 , int op2 , int PC );
+        int random();
 };
 
 class JInstruction : public Instruction
@@ -78,15 +79,16 @@ class JInstruction : public Instruction
         int value;
         bool addFlag;
 
-        JInstruction (  int ins );
+        JInstruction (  unsigned int ins );
         JInstruction ();
-        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
-        int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
-        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
-        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
-        insInfo getDetails();
-        int computeValue ( int op1 , int op2 , int PC );
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual int execute ( int stage , int op1 , int op2 , int PC );
+        virtual void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
+        virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
+        virtual bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
+        virtual insInfo getDetails();
+        virtual int computeValue ( int op1 , int op2 , int PC );
+        int randomMax();
 };
 
 class RInstruction : public Instruction
@@ -96,15 +98,16 @@ class RInstruction : public Instruction
         insInfo insSet;
         int value;
 
-        RInstruction (  int ins );
+        RInstruction (  unsigned int ins );
         RInstruction ();
-        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
-        int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
-        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
-        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
-        insInfo getDetails();
-        int computeValue ( int op1 , int op2 , int PC );
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual int execute ( int stage , int op1 , int op2 , int PC );
+        virtual void commit( RegisterFile & intRegisterFile , int destination, StoreBuffer & storeBuffer , int * memory );
+        virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
+        virtual bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
+        virtual insInfo getDetails();
+        virtual int computeValue ( int op1 , int op2 , int PC );
+        int randomDoubleMax();
 };
 
 class IInstruction : public Instruction
@@ -116,15 +119,16 @@ class IInstruction : public Instruction
         int tempStore;
         bool addFlag;
 
-        IInstruction (  int ins );
+        IInstruction (  unsigned int ins );
         IInstruction ();
-        insInfo IDstage(int PC, RegisterFile & intRegisterFile);
-        int execute ( int stage , int op1 , int op2 , int PC );
-        void commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory );
-        bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
-        bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
-        insInfo getDetails();
-        int computeValue ( int op1 , int op2 , int PC );
+        virtual insInfo IDstage(int PC, RegisterFile & intRegisterFile);
+        virtual int execute ( int stage , int op1 , int op2 , int PC );
+        virtual void commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory );
+        virtual bool canExecute (int stage, funcUnit & FUnit);          // Arguments to be given to this
+        virtual bool lastStage(int stage);            // If execution completed  ( Instruction Dependent )
+        virtual insInfo getDetails();
+        virtual int computeValue ( int op1 , int op2 , int PC );
+        int randomMax2();
 };
 
 #endif

@@ -27,7 +27,7 @@
 using namespace std;
 
 /*  --------------------- Instruction class dummy instructions  --------------------------------- */
-Instruction::Instruction( int ins )
+Instruction::Instruction( unsigned int ins )
 {
    instruction = ins; 
 }
@@ -42,6 +42,7 @@ insInfo Instruction::IDstage(int PC , RegisterFile & intRegisterFile )
     insInfo object;
     object.branch = false;
     object.nextPC = PC + 1 ;
+    return object;
 }
 
 int Instruction::execute ( int stage , int op1 , int op2 ,int PC )
@@ -74,19 +75,29 @@ int Instruction::computeValue ( int op1 , int op2 , int PC )
     return 0;
 }
 
+int Instruction::random ()
+{
+    return 1;
+}
+
 /* ---------------------- Instruction class dummy instructions end -------------------------------------- */
 
 
 
 /* ---------------------- JInstruction class functions ------------------------------------------------ */
 
-JInstruction::JInstruction ( int ins )
+JInstruction::JInstruction ( unsigned int ins )
 : Instruction(ins)
 {
-    int base = pow(2,26);
+    unsigned int base = pow(2,26);
     offset = ins % base;
     opcode = ins / base;
     addFlag = 1;
+}
+
+int JInstruction::randomMax()
+{
+    return 1;
 }
 
 JInstruction::JInstruction ()
@@ -109,6 +120,8 @@ insInfo JInstruction::IDstage( int PC , RegisterFile & intRegisterFile )
         insSet.nextPC = PC + offset;
         return insSet;
     }
+    else
+        return insSet;
 }
 
 void JInstruction::commit( RegisterFile & intRegisterFile , int destination , StoreBuffer & storeBuffer , int * memory )
@@ -142,14 +155,19 @@ insInfo JInstruction::getDetails()
 {
     return insSet;
 }
+
+int JInstruction::computeValue ( int op1 , int op2 , int PC )
+{
+    return offset;
+}
 /* ---------------------- JInstruction class functions end ------------------------------------------------ */
 
 
 /* ---------------------- IInstruction class functions ------------------------------------------------ */
-IInstruction::IInstruction ( int ins ) : Instruction ( ins )
+IInstruction::IInstruction ( unsigned int ins ) : Instruction ( ins )
 {
     int temp = ins;
-    int base = pow(2,16);
+    unsigned int base = pow(2,16);
     immediate  = temp % base;
     temp = temp / base;
     second = temp % 32;
@@ -158,7 +176,7 @@ IInstruction::IInstruction ( int ins ) : Instruction ( ins )
     temp = temp / 32;
     opcode = temp;
     addFlag = 1;
-    cout << "I ins :"  << opcode << " " << source << " " << second << " " << immediate;
+    cout << "I ins :"  << opcode << " " << source << " " << second << " " << immediate << endl;
 }
 
 IInstruction::IInstruction()
@@ -277,6 +295,12 @@ insInfo IInstruction::IDstage ( int PC , RegisterFile & intRegisterFile )
             insSet.op2tag = false;
         }
     }
+    return insSet;
+}
+
+int IInstruction::randomMax2()
+{
+    return 1;
 }
 
 insInfo IInstruction::getDetails ( )
@@ -350,8 +374,8 @@ bool IInstruction::canExecute(int stage , funcUnit & FUnit)
                 FUnit.add[i][stage-1] = 1;
                 return true;
             }
-            return false;
         }
+        return false;
     }
 }
 
@@ -423,6 +447,8 @@ int IInstruction::execute ( int stage , int op1 , int op2 , int PC )
             return -1;
         else if ( !addFlag )
             return value;
+        else
+            return value;
     }
 }
 
@@ -467,10 +493,10 @@ void IInstruction::commit( RegisterFile & intRegisterFile , int destination , St
 
 /* ---------------------- RInstruction class functions ------------------------------------------------ */
 
-RInstruction::RInstruction ( int  ins ): Instruction ( ins )
+RInstruction::RInstruction ( unsigned int  ins ): Instruction ( ins )
 {
     int temp = ins;
-    int base = pow(2,6);
+    unsigned int base = pow(2,6);
     func = ins % base;
     temp = temp / base;
     base = base/2;
@@ -685,4 +711,8 @@ void RInstruction::commit ( RegisterFile & intRegisterFile, int destination , St
    intRegisterFile.updateRegisters ( destination , value ); 
 }
 
+int RInstruction::randomDoubleMax()
+{
+    return 1;
+}
 /* ---------------------- RInstruction class functions end ------------------------------------------------ */

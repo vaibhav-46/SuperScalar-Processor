@@ -21,9 +21,9 @@
 #include "instructions.h"
 #include "registerFile.h"
 using namespace std;
+
 ROB::ROB()
 {
-    int index = 0;
 }
 
 int ROB::addInsRob( Instruction *p )
@@ -42,13 +42,11 @@ int ROB::addInsRob( Instruction *p )
 int ROB::execute ( ReservationStation &station )
 {
     vector<insDetails>::iterator start , end;
-    start = robEntries.begin();
     end = robEntries.end();
     int returnVal = -1;
     funcUnit FUnit;
     int final = 0;
-    int index = -1;
-    for ( start ; start != end ; start++ )
+    for ( start= robEntries.begin() ; start != end ; start++ )
     {
         if ( ! start->busy )
         {

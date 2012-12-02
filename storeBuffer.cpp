@@ -32,10 +32,9 @@ void StoreBuffer::addFinishedStore ( int address , int value  )
 void StoreBuffer::writeBack ( int address , int * memory )
 {
     vector<storeBufferEntry>::iterator beginIt , endIt;
-    beginIt = finishedStores.begin();
     endIt = finishedStores.end();
     int flag = 0;
-    for ( beginIt ; beginIt != endIt ; beginIt++ )
+    for ( beginIt = finishedStores.begin(); beginIt != endIt ; beginIt++ )
     {
         if ( beginIt->address == address )
         {
@@ -59,9 +58,8 @@ void StoreBuffer::writeBack ( int address , int * memory )
 int StoreBuffer::loadForwardingValue ( int address )
 {
     vector<storeBufferEntry>::iterator beginIt , endIt;
-    beginIt = finishedStores.begin();
     endIt = finishedStores.end();
-    for ( beginIt ; beginIt != endIt ; beginIt++ )
+    for ( beginIt=finishedStores.begin() ; beginIt != endIt ; beginIt++ )
     {
         if ( beginIt->address == address )
             return beginIt->value;
@@ -72,9 +70,8 @@ int StoreBuffer::loadForwardingValue ( int address )
 bool StoreBuffer::isValueUpdated ( int address )
 {
     vector<storeBufferEntry>::iterator beginIt , endIt;
-    beginIt = finishedStores.begin();
     endIt = finishedStores.end();
-    for ( beginIt ; beginIt != endIt ; beginIt++ )
+    for ( beginIt = finishedStores.begin() ; beginIt != endIt ; beginIt++ )
     {
         if ( beginIt->address == address )
             return true;

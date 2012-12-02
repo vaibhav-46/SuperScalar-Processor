@@ -61,7 +61,7 @@ class Processor
         JInstruction jInstruction[MAXINSTRUCTIONS];
         IInstruction iInstruction[MAXINSTRUCTIONS];
         RInstruction rInstruction[MAXINSTRUCTIONS];
-        Instruction * listInstructions[MAXINSTRUCTIONS];
+        Instruction *listInstructions[MAXINSTRUCTIONS];
 
         int insCount , stalls , cycles;
 

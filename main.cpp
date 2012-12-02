@@ -39,17 +39,18 @@ int main(int argc , char * argv[])
     ifstream inputHandle;
     inputHandle.open(argv[1]);
     string line;
-    int index=0;
-    int currentIns = 0;
     while( true )
     {
-        getline( inputHandle , line );
+        if ( !getline( inputHandle , line ) )
+            break;
         if ( inputHandle.eof() )
             break;
         if ( !(line.empty()) )
             superScalar.addInstruction ( line );
         else
+        {
             break;
+        }
    }
 
     //superScalar.codeRunning();

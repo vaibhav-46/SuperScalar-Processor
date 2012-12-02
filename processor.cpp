@@ -52,7 +52,7 @@ void Processor::addInstruction ( string hexValue )
     ss >> ins;
     char type;
     type = getType( ins );
-    cout << "INS : " << ins <<  "   Type : " << type << endl;
+    cout << " Instruction : " << ins << "   " ;
     switch(type)
     {
         case 'J' : 
@@ -106,13 +106,14 @@ void Processor::execute()
     bool commited;
     int numberInsGot = 0, numberInsDecoded = 0;
     int execute, numberInsDispatched = 0;
+    cout << " Ready to execute !! " << endl;
     while ( ! ( (PC > sCount) && !commited && ( execute!=-1) && !(numberInsDecoded ) && !(numberInsGot) ) )
     {
         commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory );
         execute = reOrderBuffer.execute( resStation );
         numberInsDispatched = resStation.dispatchInstructions ( reOrderBuffer );
         numberInsDecoded = decodeInstructions ( insList , numberInsGot );
-        while ( ! branchStall )
+        while ( branchStall )
         {
             commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory );
             execute = reOrderBuffer.execute ( resStation );
@@ -138,7 +139,7 @@ int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
     int flag = 0;
     for ( i = 0 ; i < numberIns ; i++ )
     {
-        insInfo returnVal= listIns[i].ins->getDetails();      
+        insInfo returnVal= listIns[i].ins->IDstage ( listIns[i].PC , intRegisterFile );      
         if ( returnVal.branch )
         {
             resStation.fillReservationStation ( listIns[i].PC , listIns[i].ins , reOrderBuffer , intRegisterFile );
@@ -170,15 +171,9 @@ int Processor::decodeInstructions ( newInstr * listIns , int numberIns )
             resStation.fillReservationStation( listIns[i].PC , listIns[i].ins , reOrderBuffer , intRegisterFile );
     }
     if ( flag )
-    {
-        listIns[i+1].ins = '\0';
         return i+1;
-    }
     else
-    {
-        listIns[i].ins = '\0';
         return i;
-    }
 }
 
 // Gets the required number of instructions that can be fit into the reservation station ( which is an argument -> numberIns )
