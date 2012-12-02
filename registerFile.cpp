@@ -35,6 +35,9 @@ RegisterFile::RegisterFile()
     registers[5] = 5;
     registers[1] = 1;
     registers[6] = 0;
+    registers[8] = 2;
+    registers[9] = 24;
+    registers[7] = 144;
 }
 
 int RegisterFile::noPortsWritable ()

@@ -61,14 +61,9 @@ void ReservationStation::fillReservationStation ( int PC , Instruction *ins , RO
             instructions[i].branch = insDetails.branch;
             // Register Renaming in case the instruction is a write instruction
             int index = 0;
-            cout << "Instruction added to RS : " << PC;
+            cout << "Instruction added to RS : " << PC << endl;
             if ( insDetails.doesWrite )
-            {
                 index = intRegiserFile.renameVariable ( insDetails.destination , renameIndex );
-                cout << "\t " << index << endl;
-            }
-            else
-                cout << endl;
             instructions[i].destination = index;
             break;
         }
@@ -77,7 +72,7 @@ void ReservationStation::fillReservationStation ( int PC , Instruction *ins , RO
 
 void ReservationStation::updateReservationStation(int index , int value )
 {
-    cout << "Reservation Station being updated by the index :  "  << index << "  ";
+    //cout << "Reservation Station being updated by the index :  "  << index << "  ";
     for ( int i = 0 ; i < SIZEOFSTATION ; i++ )
     {
         if ( instructions[i].busy )
@@ -86,7 +81,7 @@ void ReservationStation::updateReservationStation(int index , int value )
         {
             if ( instructions[i].dataTag == index )
             {
-                cout << instructions[i].PC << "   ";
+                //cout << instructions[i].PC << "   ";
                 instructions[i].dataTag = value;
                 instructions[i].valid = 1;
             }
@@ -95,7 +90,7 @@ void ReservationStation::updateReservationStation(int index , int value )
         {
             if ( instructions[i].dataTag2 == index )
             {
-                cout << instructions[i].PC << "   ";
+                //cout << instructions[i].PC << "   ";
                 instructions[i].dataTag2 = value;
                 instructions[i].valid2 = 1;
             }
@@ -104,7 +99,7 @@ void ReservationStation::updateReservationStation(int index , int value )
             instructions[i].readyForDispatch = true;
     }
     }
-    cout << endl;
+    //cout << endl;
 }
 
 int ReservationStation::dispatchInstructions ( ROB & reOrderBuffer )

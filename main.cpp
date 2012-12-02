@@ -33,7 +33,6 @@ int main(int argc , char * argv[])
         cout << "Usage : " << argv[0] << " " << "file_name" << endl; ;
         exit(-1);
     }
-    cout << "Ready to go !!" << endl;
     Processor superScalar;
     superScalar.iCount = superScalar.rCount = superScalar.jCount = superScalar.sCount = 0;
     ifstream inputHandle;
@@ -55,7 +54,9 @@ int main(int argc , char * argv[])
 
     //superScalar.codeRunning();
     superScalar.execute();
+    cout << "==================================================================================" << endl;
     superScalar.intRegisterFile.printContents();
+    cout << endl << "=================================================================================" << endl;
 //    superScalar.printDetails();
     return 0;
 }

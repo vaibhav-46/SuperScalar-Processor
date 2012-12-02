@@ -64,7 +64,7 @@ void Processor::addInstruction ( string hexValue )
     ss >> ins;
     char type;
     type = getType( ins );
-    cout << " Instruction : " << ins << "   " ;
+    //cout << " Instruction : " << ins << "   " ;
     switch(type)
     {
         case 'J' : 
@@ -96,7 +96,7 @@ void Processor::addInstruction ( string hexValue )
             }
         default:
             {
-                cout << "Last instruction read in" << endl;
+                //cout << "Last instruction read in" << endl;
                 return;
             }
     }
@@ -119,7 +119,7 @@ void Processor::execute()
     bool commited;
     int numberInsGot = 0, numberInsDecoded = 0;
     int execute, numberInsDispatched = 0;
-    cout << " Ready to execute !! Ins count : " << sCount << endl;
+    //cout << " Ready to execute !! Ins count : " << sCount << endl;
     while ( ! ( (PC >= sCount) && !commited && !(numberInsDecoded ) && !(numberInsGot) ) )
     {
         commited = reOrderBuffer.commitIns(intRegisterFile , storeBuffer , memory , resStation );
@@ -214,8 +214,10 @@ int Processor::getInstructions ( int numberIns , newInstr * listIns )
             }
         }
     }
+    /*
     if ( i != 0 )
         cout << "Getting Instructions : " << i << endl;
+    */
     return i;
 }
 

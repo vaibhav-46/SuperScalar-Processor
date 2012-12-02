@@ -59,7 +59,7 @@ int ROB::execute ( ReservationStation &station )
             {
                 if ( start->ins->canExecute ( start->stage , FUnit) )
                 {
-                    cout << "Executing instruction : " << start->PC << " " << start->op1 << " " << start->op2 << endl;
+                    cout << "Executing instruction : " << start->PC << endl;
                     start->final = start->ins->execute(start->stage , start->op1 , start->op2 , start->PC );
                     if ( start->ins->lastStage ( start->stage ) ) 
                     {
@@ -86,7 +86,7 @@ bool ROB::commitIns( RegisterFile & intRegisterFile , StoreBuffer & storeBuffer 
             if ( robEntries[0].valid )
             {
                 robEntries[0].ins->commit( intRegisterFile , robEntries[0].destinationRegister , storeBuffer , memory );
-                cout << "Commit instruction : " << robEntries[0].PC << "  " << robEntries[0].final << endl;
+                cout << "Commit instruction : " << robEntries[0].PC << endl;
                 for ( unsigned int i = 0; i < robEntries.size() ; i++ )
                     robEntries[i].destinationRegister--;
                 robEntries.erase( robEntries.begin() );

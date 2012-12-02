@@ -180,7 +180,7 @@ IInstruction::IInstruction ( unsigned int ins ) : Instruction ( ins )
     temp = temp / 32;
     opcode = temp;
     addFlag = 1;
-    cout << "I ins :"  << opcode << " " << source << " " << second << " " << immediate << endl;
+    //cout << "I ins :"  << opcode << " " << source << " " << second << " " << immediate << endl;
 }
 
 IInstruction::IInstruction()
@@ -534,7 +534,7 @@ RInstruction::RInstruction ( unsigned int  ins ): Instruction ( ins )
     temp = temp / base;
     source = temp % base;
     opcode = temp / base;
-    cout << " R Ins : " << opcode << " " << source << " " << second << " " << destination << " " << shamt << " " << func << endl;
+    //cout << " R Ins : " << opcode << " " << source << " " << second << " " << destination << " " << shamt << " " << func << endl;
 }
 
 RInstruction::RInstruction()
