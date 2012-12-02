@@ -55,6 +55,7 @@ int main(int argc , char * argv[])
 
     //superScalar.codeRunning();
     superScalar.execute();
-    superScalar.printDetails();
+    superScalar.intRegisterFile.printContents();
+//    superScalar.printDetails();
     return 0;
 }

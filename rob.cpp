@@ -86,7 +86,7 @@ bool ROB::commitIns( RegisterFile & intRegisterFile , StoreBuffer & storeBuffer 
             if ( robEntries[0].valid )
             {
                 robEntries[0].ins->commit( intRegisterFile , robEntries[0].destinationRegister , storeBuffer , memory );
-                cout << "Commit instruction : " << robEntries[0].PC << "  " << endl;
+                cout << "Commit instruction : " << robEntries[0].PC << "  " << robEntries[0].final << endl;
                 for ( unsigned int i = 0; i < robEntries.size() ; i++ )
                     robEntries[i].destinationRegister--;
                 robEntries.erase( robEntries.begin() );
@@ -121,5 +121,10 @@ bool ROB::isValid ( int regTag )
 
 int ROB::getValue ( int regTag )
 {
-    return robEntries[regTag].final;
+    for ( unsigned int i = 0 ; i < robEntries.size() ; i++ )
+    {
+        if ( robEntries[i].valid && robEntries[i].destinationRegister == regTag )
+            return robEntries[i].final;
+    }
+ 
 }

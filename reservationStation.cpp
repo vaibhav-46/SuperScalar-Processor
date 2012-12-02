@@ -114,7 +114,7 @@ int ReservationStation::dispatchInstructions ( ROB & reOrderBuffer )
     {
         if ( instructions[i].readyForDispatch && instructions[i].busy )
         {
-            //cout << "Dispatched instruction : " << instructions[i].PC << endl;
+            cout << "Dispatched instruction : " << instructions[i].PC << endl;
             reOrderBuffer.updateData ( instructions[i].robIndex , instructions[i].dataTag , instructions[i].dataTag2 , instructions[i].doesWrite , instructions[i].destination , instructions[i].branch , instructions[i].PC);
             count++;
             instructions[i].busy = 0;

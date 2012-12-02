@@ -168,7 +168,7 @@ bool RegisterFile::isValid ( int regTag , ROB & reOrderBuffer )
 int RegisterFile::getValue ( int regTag , ROB & reOrderBuffer )
 {
     if ( busy[regTag] )
-        return reOrderBuffer.getValue ( regTag );
+        return reOrderBuffer.getValue ( tag[regTag] );
     else
         return registers[regTag];
 }
